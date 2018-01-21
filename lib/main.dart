@@ -68,8 +68,14 @@ class _MyHomePageState extends State<MyHomePage> {
           actions: <Widget>[
             new IconButton(
                 icon: const Icon(Icons.search),
-                tooltip: 'Shopping cart',
-                onPressed: ()=>{}
+                tooltip: 'Search',
+                onPressed: ()=>{
+        Timeline.instantSync('Start Transition', arguments: <String, String>{
+      'from': '/',
+      'to': routeName
+    });
+    Navigator.pushNamed(context, routeName);
+                }
             ),
           ]
       ),
