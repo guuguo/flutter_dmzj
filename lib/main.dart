@@ -1,30 +1,17 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_demo/list_demo.dart';
+import 'package:flutter_demo/mainpage/recommend.dart';
 
 void main() => runApp(new MyApp());
 
 class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-//    Widget _applyScaleFactor(Widget child) {
-//      return new Builder(
-//        builder: (BuildContext context) => new MediaQuery(
-//              data: MediaQuery.of(context).copyWith(),
-//              child: child,
-//            ),
-//      );
-//    }
-
-//    final Map<String, WidgetBuilder> _kRoutes = <String, WidgetBuilder>{
-//      ListDemo.routeName: (BuildContext context) =>
-//          new ListDemo()
-//    };
-
     return new MaterialApp(
       title: '动漫之家',
       theme: new ThemeData(
-        primarySwatch: Colors.blue,
+        primarySwatch: Colors.red,
       ),
 //      routes: _kRoutes,
       home: new MyHomePage(title: '动漫之家'),
@@ -41,33 +28,39 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-  int _counter = 0;
 
-  void _incrementCounter() {
-    setState(() {
-      _counter++;
-    });
-  }
+  Map<String, Widget> _allPages = {
+    "推荐": new RecommendPage(),
+    "最近": new EmptyPage(),
+    "排行": new EmptyPage(),
+    "分类": new EmptyPage(),
+    "专题": new EmptyPage(),
+  };
 
   @override
   Widget build(BuildContext context) {
-    return new Scaffold(
-      appBar: new AppBar(
-          iconTheme: Theme.of(context).primaryIconTheme,
-          brightness: Brightness.dark,
-          title: new Align(
-              alignment: Alignment.centerLeft, child: new Text(widget.title)),
-          actions: <Widget>[
-            new IconButton(
-                icon: const Icon(Icons.search),
-                tooltip: 'Search',
-                onPressed: () {
-                  Navigator.of(context, rootNavigator: true).push(
-                        new CupertinoPageRoute<bool>(
-                          fullscreenDialog: true,
-                          builder: (BuildContext context) => new ListDemo(),
-                        ),
-                      );
+    return new DefaultTabController(
+      length: _allPages.length,
+      child: new Scaffold(
+        appBar: new AppBar(
+            iconTheme: Theme.of(context).primaryIconTheme,
+            brightness: Brightness.dark,
+            title: new TabBar(
+              tabs: _allPages.keys.map((String str) {
+                return new Tab(text: str);
+              }).toList(),
+            ),
+            actions: <Widget>[
+              new IconButton(
+                  icon: const Icon(Icons.search),
+                  tooltip: 'Search',
+                  onPressed: () {
+                    Navigator.of(context, rootNavigator: true).push(
+                          new CupertinoPageRoute<bool>(
+                            fullscreenDialog: true,
+                            builder: (BuildContext context) => new ListDemo(),
+                          ),
+                        );
 //                  Navigator.of(context).push(new PageRouteBuilder(
 //                      opaque: false,
 //                      pageBuilder: (BuildContext context, _, __) {
@@ -85,26 +78,13 @@ class _MyHomePageState extends State<MyHomePage> {
 //                  ));
 
 //                  Navigator.pushNamed(context, ListDemo.routeName);
-                }),
-          ]),
-      body: new Center(
-        child: new Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: <Widget>[
-            new Text(
-              '按键次数:',
-            ),
-            new Text(
-              '$_counter',
-              style: Theme.of(context).textTheme.display1,
-            ),
-          ],
+                  }),
+            ]),
+        body: new TabBarView(
+          children: _allPages.keys.map((title) {
+            return _allPages[title];
+          }).toList(),
         ),
-      ),
-      floatingActionButton: new FloatingActionButton(
-        onPressed: _incrementCounter,
-        tooltip: 'Increment',
-        child: new Icon(Icons.add),
       ),
     );
   }

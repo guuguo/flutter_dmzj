@@ -2,13 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_demo/api.dart';
 import 'package:flutter_demo/types.dart';
 import 'package:meta/meta.dart';
-
 
 class ListDemo extends StatefulWidget {
   const ListDemo({Key key}) : super(key: key);
@@ -23,40 +24,12 @@ class _ListDemoState extends State<ListDemo> {
   static final GlobalKey<ScaffoldState> scaffoldKey =
       new GlobalKey<ScaffoldState>();
 
-  List<Comic> items = <Comic>[];
-
+  List items = [];
+  var page = 0;
   String searchStr = "";
 
   final GlobalKey<FormFieldState<String>> _searchFieldKey =
       new GlobalKey<FormFieldState<String>>();
-
-  _searchComic(String value) async {
-    var url =
-        'http://v2.api.dmzj.com/search/show/0/%E4%B8%80%E6%8B%B3%E8%B6%85%E4%BA%BA/0.json?channel=Android&version=2.7.003';
-    var httpClient = new HttpClient();
-
-    String result;
-    try {
-      var request = await httpClient.getUrl(Uri.parse(url));
-      var response = await request.close();
-      if (response.statusCode == HttpStatus.OK) {
-        var json = await response.transform(UTF8.decoder).join();
-        List<Comic> data = JSON.decode(json);
-        setState(() {
-          items = data;
-        });
-      } else {
-        Scaffold.of(context).showSnackBar(new SnackBar(
-            content: new Text('搜索失败:\nHttp status ${response.statusCode}')));
-      }
-    } catch (exception) {
-      Scaffold
-          .of(context)
-          .showSnackBar(new SnackBar(content: new Text('搜索失败')));
-    }
-
-    if (!mounted) return;
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -87,7 +60,15 @@ class _ListDemoState extends State<ListDemo> {
                 ),
                 onChanged: (String value) {
                   searchStr = value;
-                  _searchComic(value);
+                  Api.searchComic(value, page, (s) {
+                    Scaffold
+                        .of(context)
+                        .showSnackBar(new SnackBar(content: new Text(s)));
+                  }).then((list) {
+                    setState(() {
+                      items = list;
+                    });
+                  });
                 },
               ),
             ),
@@ -113,14 +94,15 @@ class _ListDemoState extends State<ListDemo> {
         body: new Column(children: <Widget>[
           new Expanded(
               child: new GridView.count(
-            crossAxisCount: (orientation == Orientation.portrait) ? 2 : 3,
+            crossAxisCount: (orientation == Orientation.portrait) ? 3 : 4,
             mainAxisSpacing: 4.0,
             crossAxisSpacing: 4.0,
             padding: const EdgeInsets.all(4.0),
-            childAspectRatio: (orientation == Orientation.portrait) ? 1.0 : 1.3,
-            children: items.map((Comic comic) {
+            shrinkWrap: true,
+            childAspectRatio: (orientation == Orientation.portrait) ? 0.5 : 1.5,
+            children: items.map((Map comicMap) {
               return new GridComicItem(
-                  comic: comic,
+                  comic: comicMap,
                   onComicTap: (Comic comic) {
                     setState(() {
 //                            photo.isFavorite = !photo.isFavorite;
@@ -144,7 +126,7 @@ class GridComicItem extends StatelessWidget {
         assert(onComicTap != null),
         super(key: key);
 
-  final Comic comic;
+  final Map comic;
   final ComicTapCallback
       onComicTap; // User taps on the photo's header or footer.
 
@@ -168,25 +150,36 @@ class GridComicItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final Widget image = new GestureDetector(
-        onTap: () {
-          showPhoto(context);
-        },
-        child: new Hero(
-            key: new Key(comic.id.toString()),
-            tag: comic.title,
-            child: new Image.network(
-              comic.cover,
-              fit: BoxFit.cover,
-            )));
-
-    return new GridTile(
-      footer: new GridTileBar(
-        backgroundColor: Colors.black45,
-        title: new Text(comic.title),
-        subtitle: new Text(comic.authors),
+    print(comic);
+    final Widget item = new GestureDetector(
+      onTap: () {
+        showPhoto(context);
+      },
+      child: new Column(
+        children: <Widget>[
+          new Padding(padding: const EdgeInsets.symmetric(vertical: 7.0)),
+          new Card(
+            elevation: 4.0,
+            child: new Hero(
+              key: new Key(comic["id"].toString()),
+              tag: comic["title"],
+              child: new Image.network(
+                comic["cover"],
+                width: 100.0,
+                height: 150.0,
+                fit: BoxFit.cover,
+                headers: imageHeader,
+              ),
+            ),
+          ),
+          new Padding(padding: const EdgeInsets.symmetric(vertical: 7.0)),
+          new Text(
+            comic["title"],
+            style: Theme.of(context).textTheme.body2,
+          )
+        ],
       ),
-      child: image,
     );
+    return item;
   }
 }
