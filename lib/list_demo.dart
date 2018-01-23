@@ -22,18 +22,20 @@ class ListDemo extends StatefulWidget {
 
 class _ListDemoState extends State<ListDemo> {
   static final GlobalKey<ScaffoldState> scaffoldKey =
-      new GlobalKey<ScaffoldState>();
+  new GlobalKey<ScaffoldState>();
 
   List items = [];
   var page = 0;
   String searchStr = "";
 
   final GlobalKey<FormFieldState<String>> _searchFieldKey =
-      new GlobalKey<FormFieldState<String>>();
+  new GlobalKey<FormFieldState<String>>();
 
   @override
   Widget build(BuildContext context) {
-    final Orientation orientation = MediaQuery.of(context).orientation;
+    final Orientation orientation = MediaQuery
+        .of(context)
+        .orientation;
 
     return new Scaffold(
         key: scaffoldKey,
@@ -50,12 +52,18 @@ class _ListDemoState extends State<ListDemo> {
               child: new TextField(
                 autofocus: true,
                 textAlign: TextAlign.start,
-                style: Theme.of(context).textTheme.title,
+                style: Theme
+                    .of(context)
+                    .textTheme
+                    .title,
                 key: _searchFieldKey,
                 decoration: new InputDecoration(
                   isDense: true,
                   hintText: '搜索',
-                  hintStyle: Theme.of(context).textTheme.caption,
+                  hintStyle: Theme
+                      .of(context)
+                      .textTheme
+                      .caption,
                   hideDivider: true,
                 ),
                 onChanged: (String value) {
@@ -80,7 +88,10 @@ class _ListDemoState extends State<ListDemo> {
                 padding: const EdgeInsets.symmetric(horizontal: 0.0),
                 child: new Text(
                   '取消',
-                  style: Theme.of(context).primaryTextTheme.subhead,
+                  style: Theme
+                      .of(context)
+                      .primaryTextTheme
+                      .subhead,
                   softWrap: false,
                 ),
                 onPressed: () {
@@ -94,22 +105,21 @@ class _ListDemoState extends State<ListDemo> {
         body: new Column(children: <Widget>[
           new Expanded(
               child: new GridView.count(
-            crossAxisCount: (orientation == Orientation.portrait) ? 3 : 4,
-            mainAxisSpacing: 4.0,
-            crossAxisSpacing: 4.0,
-            padding: const EdgeInsets.all(4.0),
-            shrinkWrap: true,
-            childAspectRatio: (orientation == Orientation.portrait) ? 0.5 : 1.5,
-            children: items.map((Map comicMap) {
-              return new GridComicItem(
-                  comic: comicMap,
-                  onComicTap: (Comic comic) {
-                    setState(() {
-//                            photo.isFavorite = !photo.isFavorite;
-                    });
-                  });
-            }).toList(),
-          ))
+//                controller: ,
+                crossAxisCount: (orientation == Orientation.portrait) ? 3 : 4,
+                mainAxisSpacing: 4.0,
+                crossAxisSpacing: 4.0,
+                padding: const EdgeInsets.all(4.0),
+                shrinkWrap: true,
+                childAspectRatio: (orientation == Orientation.portrait)
+                    ? 0.5
+                    : 1.5,
+                children: items.map((Map comicMap) {
+                  return new GridComicItem(
+                    comic: comicMap,
+                  );
+                }).toList(),
+              ))
         ]));
   }
 }
@@ -120,15 +130,11 @@ class GridComicItem extends StatelessWidget {
   GridComicItem({
     Key key,
     @required this.comic,
-    @required this.onComicTap,
   })
       : assert(comic != null),
-        assert(onComicTap != null),
         super(key: key);
 
   final Map comic;
-  final ComicTapCallback
-      onComicTap; // User taps on the photo's header or footer.
 
   void showPhoto(BuildContext context) {
 //    Navigator.push(context, new MaterialPageRoute<Null>(
@@ -175,7 +181,10 @@ class GridComicItem extends StatelessWidget {
           new Padding(padding: const EdgeInsets.symmetric(vertical: 7.0)),
           new Text(
             comic["title"],
-            style: Theme.of(context).textTheme.body2,
+            style: Theme
+                .of(context)
+                .textTheme
+                .body2,
           )
         ],
       ),
