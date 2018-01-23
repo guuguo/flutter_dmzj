@@ -8,6 +8,7 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_demo/api.dart';
+import 'package:flutter_demo/comicDetail.dart';
 import 'package:flutter_demo/types.dart';
 import 'package:meta/meta.dart';
 
@@ -64,7 +65,8 @@ class _ListDemoState extends State<ListDemo> {
                       .of(context)
                       .textTheme
                       .caption,
-                  hideDivider: true,
+//                  hideDivider: true,
+                    border:InputBorder.none,
                 ),
                 onChanged: (String value) {
                   searchStr = value;
@@ -137,21 +139,21 @@ class GridComicItem extends StatelessWidget {
   final Map comic;
 
   void showPhoto(BuildContext context) {
-//    Navigator.push(context, new MaterialPageRoute<Null>(
-//        builder: (BuildContext context) {
-//          return new Scaffold(
-//            appBar: new AppBar(
-//                title: new Text(comic.title)
-//            ),
-//            body: new SizedBox.expand(
-//              child: new Hero(
-//                tag: comic.authors,
-//                child: new GridPhotoViewer(photo: photo),
-//              ),
-//            ),
-//          );
-//        }
-//    ));
+    Navigator.push(context, new MaterialPageRoute<Null>(
+        builder: (BuildContext context) {
+          return new Scaffold(
+            appBar: new AppBar(
+                title: new Text(comic['title'])
+            ),
+            body: new SizedBox.expand(
+              child: new Hero(
+                tag: comic["title"],
+                child: new ComicDetailPage(map: comic),
+              ),
+            ),
+          );
+        }
+    ));
   }
 
   @override
