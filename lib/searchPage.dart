@@ -6,6 +6,7 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_demo/api.dart';
 import 'package:flutter_demo/comicDetail.dart';
@@ -66,7 +67,7 @@ class _ListDemoState extends State<ListDemo> {
                       .textTheme
                       .caption,
 //                  hideDivider: true,
-                    border:InputBorder.none,
+                  border: InputBorder.none,
                 ),
                 onChanged: (String value) {
                   searchStr = value;
@@ -139,20 +140,8 @@ class GridComicItem extends StatelessWidget {
   final Map comic;
 
   void showPhoto(BuildContext context) {
-    Navigator.push(context, new MaterialPageRoute<Null>(
-        builder: (BuildContext context) {
-          return new Scaffold(
-            appBar: new AppBar(
-                title: new Text(comic['title'])
-            ),
-            body: new SizedBox.expand(
-              child: new Hero(
-                tag: comic["title"],
-                child: new ComicDetailPage(map: comic),
-              ),
-            ),
-          );
-        }
+    Navigator.of(context).push(new CupertinoPageRoute<Null>(
+        builder: (BuildContext context) => new ComicDetailPage(comic: comic),
     ));
   }
 

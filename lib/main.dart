@@ -56,28 +56,10 @@ class _MyHomePageState extends State<MyHomePage> {
                   tooltip: 'Search',
                   onPressed: () {
                     Navigator.of(context, rootNavigator: true).push(
-                          new CupertinoPageRoute<bool>(
-                            fullscreenDialog: true,
+                          new CupertinoPageRoute<Null>(
                             builder: (BuildContext context) => new ListDemo(),
                           ),
                         );
-//                  Navigator.of(context).push(new PageRouteBuilder(
-//                      opaque: false,
-//                      pageBuilder: (BuildContext context, _, __) {
-//                        return new ListDemo();
-//                      },
-//                      transitionsBuilder: (_, Animation<double> animation, __, Widget child) {
-//                        return new FadeTransition(
-//                          opacity: animation,
-//                          child: new RotationTransition(
-//                            turns: new Tween<double>(begin: 0.5, end: 1.0).animate(animation),
-//                            child: child,
-//                          ),
-//                        );
-//                      }
-//                  ));
-
-//                  Navigator.pushNamed(context, ListDemo.routeName);
                   }),
             ]),
         body: new TabBarView(

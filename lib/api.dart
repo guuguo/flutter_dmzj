@@ -43,12 +43,33 @@ class Api {
         List data = JSON.decode(json);
         return data;
       } else {
-        callback('搜索失败:\nHttp status ${response.statusCode}');
+        callback('获取失败:\nHttp status ${response.statusCode}');
       }
     } catch (exception) {
-      callback('搜索失败');
+      callback('获取失败');
     }
 
     return null;
   }
+
+ static Future<Map> getComicDetail(int comicID,ErrorCallBack callback) async {
+   var url =
+       'http://v2.api.dmzj.com/comic/$comicID.json?channel=$_channel&version=$_version';
+   var httpClient = new HttpClient();
+   try {
+     var request = await httpClient.getUrl(Uri.parse(url));
+     var response = await request.close();
+     if (response.statusCode == HttpStatus.OK) {
+       var json = await response.transform(UTF8.decoder).join();
+       Map data = JSON.decode(json);
+       return data;
+     } else {
+       callback('获取失败:\nHttp status ${response.statusCode}');
+     }
+   } catch (exception) {
+     callback('搜索失败');
+   }
+
+   return null;
+ }
 }

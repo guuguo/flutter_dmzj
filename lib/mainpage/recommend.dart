@@ -13,7 +13,9 @@ class _RecommendPageState extends State<RecommendPage> {
   List _items = [];
   var _bannerString = "";
 
-  _RecommendPageState() : super() {
+  @override
+  void initState() {
+    super.initState();
     Api.getRecommend((s) {
       Scaffold.of(context).showSnackBar(new SnackBar(content: new Text(s)));
     }).then((list) {
