@@ -24,20 +24,18 @@ class ListDemo extends StatefulWidget {
 
 class _ListDemoState extends State<ListDemo> {
   static final GlobalKey<ScaffoldState> scaffoldKey =
-  new GlobalKey<ScaffoldState>();
+      new GlobalKey<ScaffoldState>();
 
   List items = [];
   var page = 0;
   String searchStr = "";
 
   final GlobalKey<FormFieldState<String>> _searchFieldKey =
-  new GlobalKey<FormFieldState<String>>();
+      new GlobalKey<FormFieldState<String>>();
 
   @override
   Widget build(BuildContext context) {
-    final Orientation orientation = MediaQuery
-        .of(context)
-        .orientation;
+    final Orientation orientation = MediaQuery.of(context).orientation;
 
     return new Scaffold(
         key: scaffoldKey,
@@ -46,83 +44,78 @@ class _ListDemoState extends State<ListDemo> {
           titleSpacing: 10.0,
           title: new Center(
             child: new Container(
-              decoration: new BoxDecoration(
-                color: Colors.white,
-                borderRadius: new BorderRadius.circular(4.0),
-              ),
-              padding: new EdgeInsets.symmetric(horizontal: 8.0),
-              child: new TextField(
-                autofocus: true,
-                textAlign: TextAlign.start,
-                style: Theme
-                    .of(context)
-                    .textTheme
-                    .title,
-                key: _searchFieldKey,
-                decoration: new InputDecoration(
-                  isDense: true,
-                  hintText: '搜索',
-                  hintStyle: Theme
-                      .of(context)
-                      .textTheme
-                      .caption,
-//                  hideDivider: true,
-                  border: InputBorder.none,
+                decoration: new BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: new BorderRadius.circular(20.0),
                 ),
-                onChanged: (String value) {
-                  searchStr = value;
-                  Api.searchComic(value, page, (s) {
-                    Scaffold
-                        .of(context)
-                        .showSnackBar(new SnackBar(content: new Text(s)));
-                  }).then((list) {
-                    setState(() {
-                      items = list;
-                    });
-                  });
-                },
-              ),
-            ),
+                padding: new EdgeInsets.symmetric(horizontal: 6.0),
+                child: new Row(
+                  children: <Widget>[
+                    new Icon(
+                      Icons.search,
+                      size: 22.0,
+                      color: Colors.black26,
+                    ),
+                    new Padding(padding: new EdgeInsets.only(left: 10.0)),
+                    new Expanded(
+                      child: new TextField(
+                        autofocus: true,
+                        textAlign: TextAlign.start,
+                        style: Theme.of(context).textTheme.title,
+                        key: _searchFieldKey,
+                        decoration: new InputDecoration(
+                          isDense: true,
+                          hintText: '搜索',
+                          hintStyle: new TextStyle(
+                              color: Colors.black26, fontSize: 16.0),
+                          border: InputBorder.none,
+                        ),
+                        onChanged: (String value) {
+                          searchStr = value;
+                          Api.searchComic(value, page, (s) {
+                            Scaffold.of(context).showSnackBar(
+                                new SnackBar(content: new Text(s)));
+                          }).then((list) {
+                            setState(() {
+                              items = list;
+                            });
+                          });
+                        },
+                      ),
+                    ),
+                  ],
+                )),
           ),
-          actions: <Widget>[
-            new Container(
-              width: 50.0,
-              child: new MaterialButton(
-                padding: const EdgeInsets.symmetric(horizontal: 0.0),
-                child: new Text(
-                  '取消',
-                  style: Theme
-                      .of(context)
-                      .primaryTextTheme
-                      .subhead,
-                  softWrap: false,
-                ),
-                onPressed: () {
-                  Navigator.of(context).pop();
-                },
-                textColor: Colors.white,
-              ),
-            ),
-          ],
         ),
         body: new Column(children: <Widget>[
           new Expanded(
-              child: new GridView.count(
+            child: items.length > 0
+                ? new GridView.count(
 //                controller: ,
-                crossAxisCount: (orientation == Orientation.portrait) ? 3 : 4,
-                mainAxisSpacing: 4.0,
-                crossAxisSpacing: 4.0,
-                padding: const EdgeInsets.all(4.0),
-                shrinkWrap: true,
-                childAspectRatio: (orientation == Orientation.portrait)
-                    ? 0.5
-                    : 1.5,
-                children: items.map((Map comicMap) {
-                  return new GridComicItem(
-                    comic: comicMap,
-                  );
-                }).toList(),
-              ))
+                    crossAxisCount:
+                        (orientation == Orientation.portrait) ? 3 : 4,
+                    mainAxisSpacing: 4.0,
+                    crossAxisSpacing: 4.0,
+                    padding: const EdgeInsets.all(4.0),
+                    shrinkWrap: true,
+                    childAspectRatio:
+                        (orientation == Orientation.portrait) ? 0.5 : 1.5,
+                    children: items.map((Map comicMap) {
+                      return new GridComicItem(
+                        comic: comicMap,
+                      );
+                    }).toList(),
+                  )
+                : new Center(
+                    child: new Text(
+                    "请输入内容以搜索",
+                    style: Theme
+                        .of(context)
+                        .textTheme
+                        .caption
+                        .apply(fontSizeFactor: 1.5),
+                  )),
+          )
         ]));
   }
 }
@@ -141,8 +134,8 @@ class GridComicItem extends StatelessWidget {
 
   void showPhoto(BuildContext context) {
     Navigator.of(context).push(new CupertinoPageRoute<Null>(
-        builder: (BuildContext context) => new ComicDetailPage(comic: comic),
-    ));
+          builder: (BuildContext context) => new ComicDetailPage(comic: comic),
+        ));
   }
 
   @override
@@ -172,10 +165,10 @@ class GridComicItem extends StatelessWidget {
           new Padding(padding: const EdgeInsets.symmetric(vertical: 7.0)),
           new Text(
             comic["title"],
-            style: Theme
-                .of(context)
-                .textTheme
-                .body2,
+            overflow: TextOverflow.ellipsis,
+            textAlign: TextAlign.center,
+            maxLines: 2,
+            style: Theme.of(context).textTheme.body2,
           )
         ],
       ),

@@ -27,7 +27,7 @@ class MyHomePage extends StatefulWidget {
   _MyHomePageState createState() => new _MyHomePageState();
 }
 
-class _MyHomePageState extends State<MyHomePage> {
+class _MyHomePageState extends State<MyHomePage> with SingleTickerProviderStateMixin {
 
   Map<String, Widget> _allPages = {
     "推荐": new RecommendPage(),
@@ -36,6 +36,14 @@ class _MyHomePageState extends State<MyHomePage> {
     "分类": new EmptyPage(),
     "专题": new EmptyPage(),
   };
+  TabController _tabController;
+
+  @override
+  void initState() {
+    super.initState();
+    _tabController = new TabController(length: _allPages.length, vsync: this);
+
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -46,7 +54,8 @@ class _MyHomePageState extends State<MyHomePage> {
             iconTheme: Theme.of(context).primaryIconTheme,
             brightness: Brightness.dark,
             title: new TabBar(
-              tabs: _allPages.keys.map((String str) {
+                controller: _tabController,
+                tabs: _allPages.keys.map((String str) {
                 return new Tab(text: str);
               }).toList(),
             ),
@@ -63,6 +72,7 @@ class _MyHomePageState extends State<MyHomePage> {
                   }),
             ]),
         body: new TabBarView(
+          controller: _tabController,
           children: _allPages.keys.map((title) {
             return _allPages[title];
           }).toList(),

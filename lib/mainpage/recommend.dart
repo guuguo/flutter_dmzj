@@ -9,9 +9,18 @@ class RecommendPage extends StatefulWidget {
   _RecommendPageState createState() => new _RecommendPageState();
 }
 
-class _RecommendPageState extends State<RecommendPage> {
+class _RecommendPageState extends State<RecommendPage>
+    with SingleTickerProviderStateMixin {
+  _RecommendPageState() : super() {}
   List _items = [];
   var _bannerString = "";
+  TabController _tabController;
+
+  @override
+  void dispose() {
+    _tabController.dispose();
+    super.dispose();
+  }
 
   @override
   void initState() {
@@ -21,41 +30,48 @@ class _RecommendPageState extends State<RecommendPage> {
     }).then((list) {
       setState(() {
         _items = list;
+        _tabController = new TabController(
+            length: (_items[0]['data'] as List).length, vsync: this);
       });
     });
   }
 
   @override
   Widget build(BuildContext context) {
-    final TabController controller = DefaultTabController.of(context);
-
     return new Scaffold(
       body: new Column(
         children: <Widget>[
           new SizedBox(
-            height: 184.0,
-            child: new Column(
+            height: 190.0,
+            child: new Stack(
               children: <Widget>[
-                 new Expanded(
-                    child: new TabBarView(
-                        children: _items.length > 0
-                            ? _items[0]['data'].map((item) {
-                                return new Container(
-                                  key: new ObjectKey(item['obj_id']),
-                                  child: new Image.network(
-                                    item['cover'],
-                                    headers: imageHeader,
-                                  ),
-                                );
-                              }).toList()
-                            : []),
+                new Positioned.fill(
+                  child: new TabBarView(
+                      controller: _tabController,
+                      children: _items.length > 0
+                          ? _items[0]['data'].map((item) {
+                              return new Container(
+                                key: new ObjectKey(item['obj_id']),
+                                child: new Image.network(
+                                  item['cover'],
+                                  fit: BoxFit.fitWidth,
+                                  headers: imageHeader,
+                                ),
+                              );
+                            }).toList()
+                          : []),
+                ),
+                new Positioned(
+                  bottom: 0.0,
+                  left: 0.0,
+                  right: 10.0,
+                  child: new Container(
+                    color: const Color(0x33000000),
+                    child: new Row(children: <Widget>[
+                      new Text(_bannerString),
+                      new TabPageSelector(controller: _tabController),
+                    ]),
                   ),
-                new Container(
-                  color:const Color(0x33000000),
-                  child: new Row(children: <Widget>[
-                    new Text(_bannerString),
-                    new TabPageSelector(controller: controller),
-                  ]),
                 ),
               ],
             ),
@@ -78,7 +94,9 @@ class _EmptyPageState extends State<EmptyPage> {
   @override
   Widget build(BuildContext context) {
     return new Scaffold(
-      body: new Text(widget.title),
+      body: new Center(
+        child: new Text(widget.title),
+      ),
     );
   }
 }

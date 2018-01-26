@@ -1,10 +1,16 @@
+import 'dart:async';
+
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_demo/api.dart';
 import 'package:flutter_demo/api.dart';
+import 'package:flutter_demo/comicContent.dart';
+import 'package:meta/meta.dart';
 
 class ComicDetailPage extends StatefulWidget {
-  const ComicDetailPage({Key key, this.comic}) : super(key: key);
+  const ComicDetailPage({Key key, @required this.comic})
+      : assert(comic != null),
+        super(key: key);
 
   final Map comic;
 
@@ -23,7 +29,7 @@ class _ComicDetaiPageState extends State<ComicDetailPage>
   Offset _normalizedOffset;
   double _previousScale;
 
-  Map _detailData = null;
+  Map _detailData;
 
   @override
   void initState() {
@@ -32,8 +38,10 @@ class _ComicDetaiPageState extends State<ComicDetailPage>
     Api.getComicDetail(widget.comic["id"], (s) {
       Scaffold.of(context).showSnackBar(new SnackBar(content: new Text(s)));
     }).then((list) {
-      setState(() {
-        _detailData = list;
+      new Timer(new Duration(milliseconds: 50), () {
+        setState(() {
+          _detailData = list;
+        });
       });
     });
     _controller = new AnimationController(vsync: this)
@@ -95,7 +103,7 @@ class _ComicDetaiPageState extends State<ComicDetailPage>
     return new Scaffold(
         appBar: new AppBar(
           centerTitle: true,
-          title: new Text(widget.comic['title']),
+          title: new Text(widget.comic['id'].toString()),
           elevation: 0.0,
         ),
         body: buildBody(context));
@@ -122,7 +130,18 @@ class _ComicDetaiPageState extends State<ComicDetailPage>
                   margin: new EdgeInsets.symmetric(horizontal: 10.0),
                   child: new MaterialButton(
                     color: Colors.red,
-                    onPressed: () => {},
+                    onPressed: () {
+                      if (_detailData.containsKey('last_updatetime')) {
+                        Navigator.of(context).push(new CupertinoPageRoute<Null>(
+                              builder: (BuildContext context) =>
+                                  new ComicContentPage(
+                                    comicID: _detailData['id'],
+                                    chapterID: _detailData['chapters'][0]
+                                        ['data'][0]['chapter_id'],
+                                  ),
+                            ));
+                      } else {}
+                    },
                     child: new Text(
                       "阅读",
                       style: Theme.of(context).primaryTextTheme.button,
@@ -133,142 +152,240 @@ class _ComicDetaiPageState extends State<ComicDetailPage>
             ),
           ),
         ),
-        new Positioned.fill(
-          child: new ListView(
-            children: <Widget>[
-              new Container(
-                height: 180.0,
-                child: new Stack(
-                  children: <Widget>[
-                    new Positioned(
-                      top: 0.0,
-                      left: 0.0,
-                      right: 0.0,
-                      child: new Container(
-                        color: Colors.red,
-                        height: 35.0,
-                      ),
-                    ),
-                    new Positioned(
-                        top: 0.0,
-                        left: 14.0,
-                        child: new Row(
-                          crossAxisAlignment: CrossAxisAlignment.center,
-                          children: <Widget>[
-                            new Card(
-                              elevation: 4.0,
-                              child: new Hero(
-                                tag: widget.comic["title"],
-                                child: new GestureDetector(
-                                  onScaleStart: _handleOnScaleStart,
-                                  onScaleUpdate: _handleOnScaleUpdate,
-                                  onScaleEnd: _handleOnScaleEnd,
-                                  child: new ClipRect(
-                                    child: new Transform(
-                                      transform: new Matrix4.identity()
-                                        ..translate(_offset.dx, _offset.dy)
-                                        ..scale(_scale),
-                                      child: new Image.network(
-                                        widget.comic['cover'],
-                                        width: 110.0,
-                                        height: 150.0,
-                                        headers: imageHeader,
-                                        fit: BoxFit.cover,
-                                      ),
-                                    ),
-                                  ),
-                                ),
-                              ),
-                            ),
-                            new Padding(
-                              padding:
-                                  new EdgeInsets.symmetric(horizontal: 8.0),
-                            ),
-                            new Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: <Widget>[
-                                new Text(
-                                  widget.comic["title"],
-                                  style: Theme.of(context).textTheme.title,
-                                ),
-                                new Padding(
-                                  padding:
-                                      new EdgeInsets.symmetric(vertical: 3.0),
-                                ),
-                                new Text(
-                                  widget.comic['authors'],
-                                  style: new TextStyle(
-                                      color: Colors.red, fontSize: 16.0),
-                                ),
-                                new Padding(
-                                  padding:
-                                      new EdgeInsets.symmetric(vertical: 3.0),
-                                ),
-                                new Text("战斗力: ${widget.comic['hot_hits']}"),
-                              ],
-                            )
-                          ],
-                        )),
-                    new Positioned(
-                        right: 16.0,
-                        top: 16.0,
-                        child: new Text(
-                          "${formatDate(_detailData['last_updatetime'])}更新",
-                          style: Theme.of(context).primaryTextTheme.caption,
-                        )),
-                  ],
-                ),
-              ),
-              new Container(
-                margin: new EdgeInsets.symmetric(horizontal: 14.0),
-                child: new Text(_detailData['description'] ?? ''),
-              ),
-              buildChapters(context),
-            ],
-          ),
+        new Positioned(
+          left: 0.0,
+          top: 0.0,
+          right: 0.0,
+          bottom: 50.0,
+          child: new CustomScrollView(slivers: buildSlivers(context)),
         ),
       ],
     );
   }
 
-  Widget buildChapters(BuildContext context) {
-    if (_detailData.containsKey("chapters"))
-      return new Column(
-          children: (_detailData['chapters'] as List<Map>).map((chapter) {
-        return new Column(
-          children: <Widget>[
-            new Text(chapter['title']),
-            new Flex(
-              direction: Axis.horizontal,
-              children: (chapter['data'] as List).map((data){
-
-              }).toList(),
-            )
-          ],
-        );
-      }).toList());
-    else
-      return new CupertinoActivityIndicator();
+  buildSlivers(BuildContext context) {
+    var sliver = <Widget>[
+      new SliverToBoxAdapter(
+        child: new Container(
+          height: 180.0,
+          child: new Stack(
+            children: <Widget>[
+              new Positioned(
+                top: 0.0,
+                left: 0.0,
+                right: 0.0,
+                child: new Container(
+                  color: Colors.red,
+                  height: 35.0,
+                ),
+              ),
+              new Positioned(
+                  top: 0.0,
+                  left: 14.0,
+                  right: 0.0,
+                  child: new Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: <Widget>[
+                      new Card(
+                        elevation: 4.0,
+                        child: new Hero(
+                          tag: widget.comic["title"],
+                          child: new GestureDetector(
+                            onScaleStart: _handleOnScaleStart,
+                            onScaleUpdate: _handleOnScaleUpdate,
+                            onScaleEnd: _handleOnScaleEnd,
+                            child: new ClipRect(
+                              child: new Transform(
+                                transform: new Matrix4.identity()
+                                  ..translate(_offset.dx, _offset.dy)
+                                  ..scale(_scale),
+                                child: new Image.network(
+                                  widget.comic['cover'],
+                                  width: 110.0,
+                                  height: 150.0,
+                                  headers: imageHeader,
+                                  fit: BoxFit.cover,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                      new Padding(
+                        padding: new EdgeInsets.symmetric(horizontal: 6.0),
+                      ),
+                      new Expanded(
+                        child: new Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: <Widget>[
+                            new Padding(
+                              padding: new EdgeInsets.symmetric(vertical: 20.0),
+                            ),
+                            new Text(
+                              widget.comic["title"],
+                              maxLines: 2,
+                              softWrap: true,
+                              style: Theme.of(context).textTheme.title,
+                            ),
+                            new Padding(
+                              padding: new EdgeInsets.symmetric(vertical: 3.0),
+                            ),
+                            new Text(
+                              widget.comic['authors'],
+                              style: new TextStyle(
+                                  color: Colors.red, fontSize: 16.0),
+                            ),
+                            new Padding(
+                              padding: new EdgeInsets.symmetric(vertical: 3.0),
+                            ),
+                            new Text("战斗力: ${widget.comic['hot_hits']}"),
+                          ],
+                        ),
+                      ),
+                    ],
+                  )),
+              new Positioned(
+                  right: 16.0,
+                  top: 16.0,
+                  child: new Text(
+                    "${formatDate(_detailData['last_updatetime'])}更新",
+                    style: Theme.of(context).primaryTextTheme.caption,
+                  )),
+            ],
+          ),
+        ),
+      ),
+      new SliverToBoxAdapter(
+        child: new Container(
+          margin: new EdgeInsets.symmetric(horizontal: 14.0),
+          child: new Text(_detailData['description'] ?? ''),
+        ),
+      ),
+    ];
+    sliver.addAll(buildChaptersOrProgress(context));
+    return sliver;
   }
-  Widget buildChapterItem(Map data) {
-      return new Column(
-          children: (_detailData['chapters'] as List<Map>).map((chapter) {
-            return new Column(
-              children: <Widget>[
-                new Text(chapter['title']),
-                new Flex(
-                  direction: Axis.horizontal,
-                  children: (chapter['data'] as List).map((data){
 
-                  }).toList(),
-                )
-              ],
-            );
-          }).toList());
+  buildChaptersOrProgress(BuildContext context) {
+    if (_detailData.containsKey("chapters")) {
+      return buildChapters();
+    } else {
+      return [
+        new SliverToBoxAdapter(
+          child: new CupertinoActivityIndicator(),
+        ),
+      ];
+    }
   }
+
+  List<Widget> buildChapters({bool concise = true}) {
+    List<Widget> widgetList = [];
+    var chapterDetailList = (_detailData['chapters'] as List<Map>);
+    var i = 0;
+    chapterDetailList.forEach((chapter) {
+      var displayNum = i == 0 ? 8 : 4;
+      var chapterList = (chapter['data'] as List);
+      displayNum =
+          displayNum > chapterList.length ? chapterList.length : displayNum;
+      widgetList.add(new SliverPadding(
+        padding: new EdgeInsets.all(15.0),
+        sliver: new SliverToBoxAdapter(
+          child: new Center(
+            child: new Text(
+              "····  ${chapter['title']}  ····",
+              style: Theme.of(context).textTheme.caption,
+            ),
+          ),
+        ),
+      ));
+      widgetList.add(
+        new SliverPadding(
+          padding: new EdgeInsets.symmetric(horizontal: 10.0),
+          sliver: new SliverGrid(
+            gridDelegate: new SliverGridDelegateWithMaxCrossAxisExtent(
+              maxCrossAxisExtent: 90.0,
+              mainAxisSpacing: 10.0,
+              crossAxisSpacing: 10.0,
+              childAspectRatio: 2.0,
+            ),
+            delegate: new SliverChildListDelegate(
+                buildChapterItems(chapterList, displayNum, concise)),
+          ),
+        ),
+      );
+      i++;
+    });
+    widgetList.add(
+      new SliverToBoxAdapter(
+        child: new Padding(padding: new EdgeInsets.symmetric(vertical: 30.0)),
+      ),
+    );
+    return widgetList;
+  }
+
+  buildChapterItem(Map data) {
+    return new GestureDetector(
+      onTap: () {
+        if (data['chapter_id'] == 0) {
+          Navigator.of(context).push(new CupertinoPageRoute<Null>(
+                builder: (BuildContext context) => buildChaptersPage(),
+              ));
+        } else {
+          Navigator.of(context).push(new CupertinoPageRoute<Null>(
+                builder: (BuildContext context) => new ComicContentPage(
+                      comicID: _detailData['id'],
+                      chapterID: data['chapter_id'],
+                    ),
+              ));
+        }
+      },
+      child: new Container(
+        decoration: new BoxDecoration(
+          border: new Border.all(color: Colors.red),
+        ),
+        child: new Center(
+          child: new Text(
+            data['chapter_title'],
+            maxLines: 2,
+            textAlign: TextAlign.center,
+            style: new TextStyle(color: Colors.red),
+          ),
+        ),
+      ),
+    );
+  }
+
   String formatDate(int long) {
     if (long == null) return '';
     var now = new DateTime.fromMillisecondsSinceEpoch(long * 1000);
     return '${now.year}/${now.month}/${now.day}';
+  }
+
+  List<Widget> buildChapterItems(List chapterList, displayNum, bool concise) {
+    var _chapterList = chapterList;
+    if (concise) {
+      _chapterList = _chapterList.sublist(
+          0,
+          chapterList.length <= displayNum
+              ? chapterList.length
+              : displayNum - 1);
+    }
+    List<Widget> list = _chapterList.map((data) {
+      return buildChapterItem(data);
+    }).toList();
+    if (list.length < displayNum) {
+      list.add(buildChapterItem({"chapter_title": "····", "chapter_id": 0}));
+    }
+    return list;
+  }
+
+  buildChaptersPage() {
+    return new Scaffold(
+      appBar: new AppBar(
+        centerTitle: true,
+        title: new Text(_detailData['title']),
+      ),
+      body: new CustomScrollView(slivers: buildChapters(concise: false)),
+    );
   }
 }
