@@ -91,7 +91,6 @@ class _ListDemoState extends State<ListDemo> {
           new Expanded(
             child: items.length > 0
                 ? new GridView.count(
-//                controller: ,
                     crossAxisCount:
                         (orientation == Orientation.portrait) ? 3 : 4,
                     mainAxisSpacing: 4.0,
