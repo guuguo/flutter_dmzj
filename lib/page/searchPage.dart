@@ -9,8 +9,8 @@ import 'dart:io';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_demo/api.dart';
-import 'package:flutter_demo/comicDetail.dart';
-import 'package:flutter_demo/types.dart';
+import 'package:flutter_demo/page/comicDetail.dart';
+import 'package:flutter_demo/type/comicDetail.dart';
 import 'package:meta/meta.dart';
 
 class ListDemo extends StatefulWidget {
@@ -23,12 +23,14 @@ class ListDemo extends StatefulWidget {
 }
 
 class _ListDemoState extends State<ListDemo> {
+  static final TextEditingController textFieldController = new TextEditingController();
+
   static final GlobalKey<ScaffoldState> scaffoldKey =
   new GlobalKey<ScaffoldState>();
 
   List _items = [];
   var page = 0;
-  String searchStr = "";
+  String _searchStr = "";
 
   final GlobalKey<FormFieldState<String>> _searchFieldKey =
   new GlobalKey<FormFieldState<String>>();
@@ -61,6 +63,7 @@ class _ListDemoState extends State<ListDemo> {
                     new Padding(padding: new EdgeInsets.only(left: 10.0)),
                     new Expanded(
                       child: new TextField(
+                        controller: textFieldController,
                         autofocus: true,
                         textAlign: TextAlign.start,
                         style: Theme
@@ -76,7 +79,9 @@ class _ListDemoState extends State<ListDemo> {
                           border: InputBorder.none,
                         ),
                         onChanged: (String value) {
-                          searchStr = value;
+                          setState(() {
+                            _searchStr = value;
+                          });
                           Api.searchComic(value, page, (s) {
                             scaffoldKey.currentState.showSnackBar(
                                 new SnackBar(content: new Text(s)));
@@ -88,33 +93,51 @@ class _ListDemoState extends State<ListDemo> {
                         },
                       ),
                     ),
+                    _searchStr.isEmpty
+                        ? new Text("") : new GestureDetector(
+                      child: new Padding(child: new Icon(Icons.close,
+                        size: 18.0,
+                        color: Colors.black26,),
+                        padding: new EdgeInsets.all(6.0),
+                      ), onTap: () {
+                      textFieldController.clear();
+                      setState(() {
+                        _searchStr = "";
+                        _items=[];
+                      });
+                    },),
+
                   ],
                 )),
           ),
         ),
         body: new Column(children: <Widget>[
           new Expanded(
-            child: _items.length > 0
-                ? new GridView(
-              gridDelegate: new SliverGridDelegateWithMaxCrossAxisExtent(
-                maxCrossAxisExtent: 110.0,
-                mainAxisSpacing: 10.0,
-                crossAxisSpacing: 10.0,
-                childAspectRatio: (orientation == Orientation.portrait) ? 0.5:0.45,
-              ),
-              children: _items.map((comicMap) {
-                return buildComicItem(comicMap);
-              }).toList(),
-            )
-                : new Center(
+              child: _items.length > 0
+                  ? new GridView(
+                gridDelegate: new SliverGridDelegateWithMaxCrossAxisExtent(
+                  maxCrossAxisExtent: 110.0,
+                  mainAxisSpacing: 10.0,
+                  crossAxisSpacing: 10.0,
+                  childAspectRatio: (orientation == Orientation.portrait)
+                      ? 0.5
+                      : 0.45,
+                ),
+                children: _items.map((comicMap) {
+                  return buildComicItem(comicMap);
+                }).toList(),
+              )
+                  : new Align(
+                alignment: Alignment.topCenter, child: new Padding(
                 child: new Text(
                   "请输入内容以搜索",
+                  textAlign: TextAlign.center,
                   style: Theme
                       .of(context)
                       .textTheme
                       .caption
                       .apply(fontSizeFactor: 1.5),
-                )),
+                ), padding: new EdgeInsets.all(20.0),),)
           )
         ]));
   }
@@ -122,9 +145,7 @@ class _ListDemoState extends State<ListDemo> {
   buildComicItem(Map comic) {
     final Widget item = new GestureDetector(
       onTap: () {
-        Navigator.of(context).push(new CupertinoPageRoute<Null>(
-          builder: (BuildContext context) => new ComicDetailPage(comic: comic),
-        ));
+        ComicDetailPage.intentTo(context, comic);
       },
       child: new Column(
         children: <Widget>[

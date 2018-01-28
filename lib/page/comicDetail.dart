@@ -5,7 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter_demo/api.dart';
 import 'package:flutter_demo/chapterGridDelegate.dart';
-import 'package:flutter_demo/comicContent.dart';
+import 'package:flutter_demo/page/comicContent.dart';
 import 'package:meta/meta.dart';
 
 class ComicDetailPage extends StatefulWidget {
@@ -17,6 +17,12 @@ class ComicDetailPage extends StatefulWidget {
 
   @override
   _ComicDetaiPageState createState() => new _ComicDetaiPageState();
+
+  static intentTo(BuildContext context,Map comic){
+    Navigator.of(context).push(new CupertinoPageRoute<Null>(
+      builder: (BuildContext context) => new ComicDetailPage(comic: comic),
+    ));
+  }
 }
 
 const double _kMinFlingVelocity = 800.0;
@@ -236,14 +242,14 @@ class _ComicDetaiPageState extends State<ComicDetailPage>
                               padding: new EdgeInsets.symmetric(vertical: 3.0),
                             ),
                             new Text(
-                              widget.comic['authors'],
+                              widget.comic['authors']??"",
                               style: new TextStyle(
                                   color: Colors.red, fontSize: 16.0),
                             ),
                             new Padding(
                               padding: new EdgeInsets.symmetric(vertical: 3.0),
                             ),
-                            new Text("战斗力: ${widget.comic['hot_hits']}"),
+                            new Text("战斗力: ${_detailData['hot_num']??''}"),
                           ],
                         ),
                       ),

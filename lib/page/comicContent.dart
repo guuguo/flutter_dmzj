@@ -2,6 +2,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_demo/api.dart';
 import 'package:flutter_demo/api.dart';
+import 'package:flutter_demo/widgets/PlutoImage.dart';
 import 'package:meta/meta.dart';
 
 class ComicContentPage extends StatefulWidget {
@@ -56,9 +57,9 @@ class _ComicContentPageState extends State<ComicContentPage>
   getImageView(String src) {
     return new Container(
       decoration: new BoxDecoration(border: new Border(bottom: new BorderSide())),
-      child: new Image.network(
-        src,
-        fit: BoxFit.fitWidth,
+      child: new PlutoImage.networkWithPlaceholder(
+        src,new Image.asset('img/loading.png',height: 400.0,scale: 0.2,fit: BoxFit.none,color: Colors.black38,),
+        fit: BoxFit.cover,
         headers: imageHeader,
       ),
     );
