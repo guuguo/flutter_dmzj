@@ -4,7 +4,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter_demo/api.dart';
-import 'package:flutter_demo/api.dart';
+import 'package:flutter_demo/chapterGridDelegate.dart';
 import 'package:flutter_demo/comicContent.dart';
 import 'package:meta/meta.dart';
 
@@ -55,8 +55,6 @@ class _ComicDetaiPageState extends State<ComicDetailPage>
     super.dispose();
   }
 
-  // The maximum offset value is 0,0. If the size of this renderer's box is w,h
-  // then the minimum offset value is w - _scale * w, h - _scale * h.
   Offset _clampOffset(Offset offset) {
     final Size size = context.size;
     final Offset minOffset =
@@ -92,7 +90,7 @@ class _ComicDetaiPageState extends State<ComicDetailPage>
     final Offset direction = details.velocity.pixelsPerSecond / magnitude;
     final double distance = (Offset.zero & context.size).shortestSide;
     _flingAnimation = new Tween<Offset>(
-            begin: _offset, end: _clampOffset(_offset + direction * distance))
+        begin: _offset, end: _clampOffset(_offset + direction * distance))
         .animate(_controller);
     _controller
       ..value = 0.0
@@ -134,18 +132,21 @@ class _ComicDetaiPageState extends State<ComicDetailPage>
                     onPressed: () {
                       if (_detailData.containsKey('last_updatetime')) {
                         Navigator.of(context).push(new CupertinoPageRoute<Null>(
-                              builder: (BuildContext context) =>
-                                  new ComicContentPage(
-                                    comicID: _detailData['id'],
-                                    chapterID: _detailData['chapters'][0]
-                                        ['data'][0]['chapter_id'],
-                                  ),
-                            ));
+                          builder: (BuildContext context) =>
+                          new ComicContentPage(
+                            comicID: _detailData['id'],
+                            chapterID: _detailData['chapters'][0]
+                            ['data'][0]['chapter_id'],
+                          ),
+                        ));
                       } else {}
                     },
                     child: new Text(
                       "阅读",
-                      style: Theme.of(context).primaryTextTheme.button,
+                      style: Theme
+                          .of(context)
+                          .primaryTextTheme
+                          .button,
                     ),
                   ),
                 ),
@@ -226,7 +227,10 @@ class _ComicDetaiPageState extends State<ComicDetailPage>
                               widget.comic["title"],
                               maxLines: 2,
                               softWrap: true,
-                              style: Theme.of(context).textTheme.title,
+                              style: Theme
+                                  .of(context)
+                                  .textTheme
+                                  .title,
                             ),
                             new Padding(
                               padding: new EdgeInsets.symmetric(vertical: 3.0),
@@ -250,7 +254,10 @@ class _ComicDetaiPageState extends State<ComicDetailPage>
                   top: 16.0,
                   child: new Text(
                     "${formatDate(_detailData['last_updatetime'])}更新",
-                    style: Theme.of(context).primaryTextTheme.caption,
+                    style: Theme
+                        .of(context)
+                        .primaryTextTheme
+                        .caption,
                   )),
             ],
           ),
@@ -282,82 +289,20 @@ class _ComicDetaiPageState extends State<ComicDetailPage>
   List<Widget> buildChapters({bool concise = true}) {
     List<Widget> widgetList = [];
     var chapterDetailList = (_detailData['chapters'] as List<Map>);
-    var i = 0;
-    chapterDetailList.forEach((chapter) {
-      var displayNum = i == 0 ? 8 : 4;
-      var chapterList = (chapter['data'] as List);
-      displayNum =
-          displayNum > chapterList.length ? chapterList.length : displayNum;
-      widgetList.add(new SliverPadding(
-        padding: new EdgeInsets.all(15.0),
-        sliver: new SliverToBoxAdapter(
-          child: buildChapterTitle(chapter),
-        ),
-      ));
-      widgetList.add(
-        new SliverPadding(
-          padding: new EdgeInsets.symmetric(horizontal: 10.0),
-          sliver: new SliverGrid(
-            gridDelegate: new SliverGridDelegateWithMaxCrossAxisExtent(
-              maxCrossAxisExtent: 90.0,
-              mainAxisSpacing: 10.0,
-              crossAxisSpacing: 10.0,
-              childAspectRatio: 2.0,
-            ),
-            delegate: new SliverChildListDelegate(
-                buildChapterItems(chapterList, displayNum, concise)),
-          ),
-        ),
-      );
-      i++;
-    });
+
     widgetList.add(
-      new SliverToBoxAdapter(
-        child: new Padding(padding: new EdgeInsets.symmetric(vertical: 30.0)),
+      new SliverPadding(
+        padding: new EdgeInsets.fromLTRB(10.0,0.0,10.0,10.0),
+        sliver: new SliverGrid(
+            gridDelegate: new ChapterGridDelegate(
+              chapters: chapterDetailList, concise: concise,),
+            delegate: new SliverChildListDelegate(
+              _buildAllChapterItems(
+                  _detailData, chapterDetailList, concise, context),)
+        ),
       ),
     );
     return widgetList;
-  }
-
-  Center buildChapterTitle(Map chapter) {
-    return new Center(
-          child: new Text(
-            "····  ${chapter['title']}  ····",
-            style: Theme.of(context).textTheme.caption,
-          ),
-        );
-  }
-
-  buildChapterItem(Map data) {
-    return new GestureDetector(
-      onTap: () {
-        if (data['chapter_id'] == 0) {
-          Navigator.of(context).push(new CupertinoPageRoute<Null>(
-                builder: (BuildContext context) => buildChaptersPage(),
-              ));
-        } else {
-          Navigator.of(context).push(new CupertinoPageRoute<Null>(
-                builder: (BuildContext context) => new ComicContentPage(
-                      comicID: _detailData['id'],
-                      chapterID: data['chapter_id'],
-                    ),
-              ));
-        }
-      },
-      child: new Container(
-        decoration: new BoxDecoration(
-          border: new Border.all(color: Colors.red),
-        ),
-        child: new Center(
-          child: new Text(
-            data['chapter_title'],
-            maxLines: 2,
-            textAlign: TextAlign.center,
-            style: new TextStyle(color: Colors.red),
-          ),
-        ),
-      ),
-    );
   }
 
   String formatDate(int long) {
@@ -365,130 +310,112 @@ class _ComicDetaiPageState extends State<ComicDetailPage>
     var now = new DateTime.fromMillisecondsSinceEpoch(long * 1000);
     return '${now.year}/${now.month}/${now.day}';
   }
+}
 
-  List<Widget> buildChapterItems(List chapterList, displayNum, bool concise) {
-    var _chapterList = chapterList;
-    if (concise) {
-      _chapterList = _chapterList.sublist(
-          0,
-          chapterList.length <= displayNum
-              ? chapterList.length
-              : displayNum - 1);
-    }
-    List<Widget> list = _chapterList.map((data) {
-      return buildChapterItem(data);
-    }).toList();
-    if (list.length < displayNum) {
-      list.add(buildChapterItem({"chapter_title": "····", "chapter_id": 0}));
-    }
-    return list;
+_buildAllChapterItems(Map detailData, List<Map> chapterDetailList, bool concise,
+    BuildContext context) {
+  List<Widget> widgetList = [];
+  var i = 0;
+  chapterDetailList.forEach((chapter) {
+    var displayNum = i == 0 ? 8 : 4;
+    var chapterList = (chapter['data'] as List);
+    displayNum =
+    displayNum > chapterList.length ? chapterList.length : displayNum;
+    widgetList.add(buildChapterTitle(chapter, context));
+    widgetList.addAll(_buildChapterItems(
+        detailData, chapterList, displayNum, concise, context));
+    i++;
+  });
+  return widgetList;
+}
+
+List<Widget> _buildChapterItems(Map detailData, List chapterList, displayNum,
+    bool concise, BuildContext context) {
+  var _chapterList = chapterList;
+  if (concise) {
+    _chapterList = _chapterList.sublist(
+        0,
+        chapterList.length <= displayNum
+            ? chapterList.length
+            : displayNum - 1);
   }
+  List<Widget> list = _chapterList.map((data) {
+    return buildChapterItem(detailData, data, context);
+  }).toList();
+  if (list.length < displayNum) {
+    list.add(buildChapterItem(
+        detailData, {"chapter_title": "····", "chapter_id": 0}, context));
+  }
+  return list;
+}
 
-  buildChaptersPage() {
+buildChapterTitle(Map chapter, BuildContext context) {
+  return new Container(height: 40.0, child: new Center(
+    child: new Text(
+      "····  ${chapter['title']}  ····",
+      style: Theme
+          .of(context)
+          .textTheme
+          .caption,
+    ),
+  ),);
+}
+
+buildChapterItem(Map detailData, Map data, BuildContext context) {
+  return new GestureDetector(
+    onTap: () {
+      if (data['chapter_id'] == 0) {
+        Navigator.of(context).push(new CupertinoPageRoute<Null>(
+          builder: (BuildContext context) => new ChaptersPage(detailData),
+        ));
+      } else {
+        Navigator.of(context).push(new CupertinoPageRoute<Null>(
+          builder: (BuildContext context) =>
+          new ComicContentPage(
+            comicID: detailData['id'],
+            chapterID: data['chapter_id'],
+          ),
+        ));
+      }
+    },
+    child: new Container(
+      height: 40.0,
+      decoration: new BoxDecoration(
+        border: new Border.all(color: Colors.red),
+      ),
+      child: new Center(
+        child: new Text(
+          data['chapter_title'],
+          maxLines: 2,
+          textAlign: TextAlign.center,
+          style: new TextStyle(color: Colors.red),
+        ),
+      ),
+    ),
+  );
+}
+
+
+class ChaptersPage extends StatelessWidget {
+  ChaptersPage(@required this.detailData) :super();
+  Map detailData;
+
+  @override Widget build(BuildContext context) {
+    var chapterDetailList = (detailData['chapters'] as List<Map>);
     return new Scaffold(
       appBar: new AppBar(
         centerTitle: true,
-        title: new Text(_detailData['title']),
+        title: new Text(detailData['title']),
       ),
-      body: new CustomScrollView(slivers: buildChapters(concise: false)),
+      body: new GridView(
+        addRepaintBoundaries: false,
+        padding: new EdgeInsets.all(10.0),
+        children: _buildAllChapterItems(
+            detailData, chapterDetailList, false, context),
+        gridDelegate: new ChapterGridDelegate(
+          chapters: chapterDetailList, concise: false,),),
     );
   }
 
-}
-
-const int _childrenPerBlock = 8;
-const int _rowsPerBlock = 5;
-
-int _minIndexInRow(int rowIndex) {
-  final int blockIndex = rowIndex ~/ _rowsPerBlock;
-  return const <int>[0, 2, 4, 6, 7][rowIndex % _rowsPerBlock] + blockIndex * _childrenPerBlock;
-}
-
-int _maxIndexInRow(int rowIndex) {
-  final int blockIndex = rowIndex ~/ _rowsPerBlock;
-  return const <int>[1, 3, 5, 6, 7][rowIndex % _rowsPerBlock] + blockIndex * _childrenPerBlock;
-}
-
-int _rowAtIndex(int index) {
-  final int blockCount = index ~/ _childrenPerBlock;
-  return const <int>[0, 0, 1, 1, 2, 2, 3, 4][index - blockCount * _childrenPerBlock] + blockCount * _rowsPerBlock;
-}
-
-int _columnAtIndex(int index) {
-  return const <int>[0, 1, 0, 1, 0, 1, 0, 0][index % _childrenPerBlock];
-}
-
-int _columnSpanAtIndex(int index) {
-  return const <int>[1, 1, 1, 1, 1, 1, 2, 2][index % _childrenPerBlock];
-}
-
-// The Shrine home page arranges the product cards into two columns. The card
-// on every 4th and 5th row spans two columns.
-class _ChaptersGridLayout extends SliverGridLayout {
-  const _ChaptersGridLayout({
-    @required this.rowStride,
-    @required this.columnStride,
-    @required this.tileHeight,
-    @required this.tileWidth,
-  });
-
-  final double rowStride;
-  final double columnStride;
-  final double tileHeight;
-  final double tileWidth;
-
-  @override
-  int getMinChildIndexForScrollOffset(double scrollOffset) {
-    return _minIndexInRow(scrollOffset ~/ rowStride);
-  }
-
-  @override
-  int getMaxChildIndexForScrollOffset(double scrollOffset) {
-    return _maxIndexInRow(scrollOffset ~/ rowStride);
-  }
-
-  @override
-  SliverGridGeometry getGeometryForChildIndex(int index) {
-    final int row = _rowAtIndex(index);
-    final int column = _columnAtIndex(index);
-    final int columnSpan = _columnSpanAtIndex(index);
-    return new SliverGridGeometry(
-      scrollOffset: row * rowStride,
-      crossAxisOffset: column * columnStride,
-      mainAxisExtent: tileHeight,
-      crossAxisExtent: tileWidth + (columnSpan - 1) * columnStride,
-    );
-  }
-
-  @override
-  double estimateMaxScrollOffset(int childCount) {
-    if (childCount == null)
-      return null;
-    if (childCount == 0)
-      return 0.0;
-    final int rowCount = _rowAtIndex(childCount - 1) + 1;
-    final double rowSpacing = rowStride - tileHeight;
-    return rowStride * rowCount - rowSpacing;
-  }
-}
-class _ChapterGridDelegate extends SliverGridDelegate {
-  static const double _kSpacing = 8.0;
-  _ChapterGridDelegate({this.concise =false}):super();
-  final bool concise;
-
-  @override
-  SliverGridLayout getLayout(SliverConstraints constraints) {
-    final double tileWidth = (constraints.crossAxisExtent - _kSpacing) / 2.0;
-    final double tileHeight = 40.0 + 144.0 + 40.0;
-    return new _ChaptersGridLayout(
-      tileWidth: tileWidth,
-      tileHeight: tileHeight,
-      rowStride: tileHeight + _kSpacing,
-      columnStride: tileWidth + _kSpacing,
-    );
-  }
-
-  @override
-  bool shouldRelayout(covariant SliverGridDelegate oldDelegate) => false;
 }
 

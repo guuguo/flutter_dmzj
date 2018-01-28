@@ -24,18 +24,20 @@ class ListDemo extends StatefulWidget {
 
 class _ListDemoState extends State<ListDemo> {
   static final GlobalKey<ScaffoldState> scaffoldKey =
-      new GlobalKey<ScaffoldState>();
+  new GlobalKey<ScaffoldState>();
 
-  List items = [];
+  List _items = [];
   var page = 0;
   String searchStr = "";
 
   final GlobalKey<FormFieldState<String>> _searchFieldKey =
-      new GlobalKey<FormFieldState<String>>();
+  new GlobalKey<FormFieldState<String>>();
 
   @override
   Widget build(BuildContext context) {
-    final Orientation orientation = MediaQuery.of(context).orientation;
+    final Orientation orientation = MediaQuery
+        .of(context)
+        .orientation;
 
     return new Scaffold(
         key: scaffoldKey,
@@ -61,7 +63,10 @@ class _ListDemoState extends State<ListDemo> {
                       child: new TextField(
                         autofocus: true,
                         textAlign: TextAlign.start,
-                        style: Theme.of(context).textTheme.title,
+                        style: Theme
+                            .of(context)
+                            .textTheme
+                            .title,
                         key: _searchFieldKey,
                         decoration: new InputDecoration(
                           isDense: true,
@@ -73,11 +78,11 @@ class _ListDemoState extends State<ListDemo> {
                         onChanged: (String value) {
                           searchStr = value;
                           Api.searchComic(value, page, (s) {
-                            Scaffold.of(context).showSnackBar(
+                            scaffoldKey.currentState.showSnackBar(
                                 new SnackBar(content: new Text(s)));
                           }).then((list) {
                             setState(() {
-                              items = list;
+                              _items = list;
                             });
                           });
                         },
@@ -89,60 +94,37 @@ class _ListDemoState extends State<ListDemo> {
         ),
         body: new Column(children: <Widget>[
           new Expanded(
-            child: items.length > 0
-                ? new GridView.count(
-                    crossAxisCount:
-                        (orientation == Orientation.portrait) ? 3 : 4,
-                    mainAxisSpacing: 4.0,
-                    crossAxisSpacing: 4.0,
-                    padding: const EdgeInsets.all(4.0),
-                    shrinkWrap: true,
-                    childAspectRatio:
-                        (orientation == Orientation.portrait) ? 0.5 : 1.5,
-                    children: items.map((Map comicMap) {
-                      return new GridComicItem(
-                        comic: comicMap,
-                      );
-                    }).toList(),
-                  )
+            child: _items.length > 0
+                ? new GridView(
+              gridDelegate: new SliverGridDelegateWithMaxCrossAxisExtent(
+                maxCrossAxisExtent: 110.0,
+                mainAxisSpacing: 10.0,
+                crossAxisSpacing: 10.0,
+                childAspectRatio: (orientation == Orientation.portrait) ? 0.5:0.45,
+              ),
+              children: _items.map((comicMap) {
+                return buildComicItem(comicMap);
+              }).toList(),
+            )
                 : new Center(
-                    child: new Text(
-                    "请输入内容以搜索",
-                    style: Theme
-                        .of(context)
-                        .textTheme
-                        .caption
-                        .apply(fontSizeFactor: 1.5),
-                  )),
+                child: new Text(
+                  "请输入内容以搜索",
+                  style: Theme
+                      .of(context)
+                      .textTheme
+                      .caption
+                      .apply(fontSizeFactor: 1.5),
+                )),
           )
         ]));
   }
-}
 
-typedef void ComicTapCallback(Comic comic);
-
-class GridComicItem extends StatelessWidget {
-  GridComicItem({
-    Key key,
-    @required this.comic,
-  })
-      : assert(comic != null),
-        super(key: key);
-
-  final Map comic;
-
-  void showPhoto(BuildContext context) {
-    Navigator.of(context).push(new CupertinoPageRoute<Null>(
-          builder: (BuildContext context) => new ComicDetailPage(comic: comic),
-        ));
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    print(comic);
+  buildComicItem(Map comic) {
     final Widget item = new GestureDetector(
       onTap: () {
-        showPhoto(context);
+        Navigator.of(context).push(new CupertinoPageRoute<Null>(
+          builder: (BuildContext context) => new ComicDetailPage(comic: comic),
+        ));
       },
       child: new Column(
         children: <Widget>[
@@ -167,11 +149,16 @@ class GridComicItem extends StatelessWidget {
             overflow: TextOverflow.ellipsis,
             textAlign: TextAlign.center,
             maxLines: 2,
-            style: Theme.of(context).textTheme.body2,
+            style: Theme
+                .of(context)
+                .textTheme
+                .body2,
           )
         ],
       ),
     );
     return item;
   }
+
 }
+
