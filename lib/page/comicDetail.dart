@@ -141,8 +141,8 @@ class _ComicDetaiPageState extends State<ComicDetailPage>
                           builder: (BuildContext context) =>
                           new ComicContentPage(
                             comicID: _detailData['id'],
-                            chapterID: _detailData['chapters'][0]
-                            ['data'][0]['chapter_id'],
+                            chapterID: (_detailData['chapters'][0]
+                            ['data'] as List).last['chapter_id'],
                           ),
                         ));
                       } else {}

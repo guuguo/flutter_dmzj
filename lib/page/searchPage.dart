@@ -13,33 +13,38 @@ import 'package:flutter_demo/page/comicDetail.dart';
 import 'package:flutter_demo/type/comicDetail.dart';
 import 'package:meta/meta.dart';
 
-class ListDemo extends StatefulWidget {
-  const ListDemo({Key key}) : super(key: key);
+class SearchPage extends StatefulWidget {
+  const SearchPage({Key key}) : super(key: key);
 
   static const String routeName = '/list';
 
   @override
-  _ListDemoState createState() => new _ListDemoState();
+  _SearchPageState createState() => new _SearchPageState();
 }
 
-class _ListDemoState extends State<ListDemo> {
-  static final TextEditingController textFieldController = new TextEditingController();
+class _SearchPageState extends State<SearchPage> {
+  static final TextEditingController textFieldController =
+      new TextEditingController();
 
   static final GlobalKey<ScaffoldState> scaffoldKey =
-  new GlobalKey<ScaffoldState>();
+      new GlobalKey<ScaffoldState>();
 
   List _items = [];
   var page = 0;
   String _searchStr = "";
 
   final GlobalKey<FormFieldState<String>> _searchFieldKey =
-  new GlobalKey<FormFieldState<String>>();
+      new GlobalKey<FormFieldState<String>>();
+
+  @override
+  dispose() {
+    super.dispose();
+    textFieldController.clear();
+  }
 
   @override
   Widget build(BuildContext context) {
-    final Orientation orientation = MediaQuery
-        .of(context)
-        .orientation;
+    final Orientation orientation = MediaQuery.of(context).orientation;
 
     return new Scaffold(
         key: scaffoldKey,
@@ -50,26 +55,29 @@ class _ListDemoState extends State<ListDemo> {
             child: new Container(
                 decoration: new BoxDecoration(
                   color: Colors.white,
-                  borderRadius: new BorderRadius.circular(20.0),
+                  borderRadius: new BorderRadius.circular(5.0),
                 ),
                 padding: new EdgeInsets.symmetric(horizontal: 6.0),
                 child: new Row(
                   children: <Widget>[
-                    new Icon(
-                      Icons.search,
-                      size: 22.0,
-                      color: Colors.black26,
-                    ),
-                    new Padding(padding: new EdgeInsets.only(left: 10.0)),
+                    new GestureDetector(
+                        child: new Padding(
+                          padding: new EdgeInsets.only(right: 15.0),
+                          child: new Icon(
+                            Icons.arrow_back,
+                            size: 22.0,
+                            color: Colors.black26,
+                          ),
+                        ),
+                        onTap: () {
+                          Navigator.of(context).pop();
+                        }),
                     new Expanded(
                       child: new TextField(
                         controller: textFieldController,
                         autofocus: true,
                         textAlign: TextAlign.start,
-                        style: Theme
-                            .of(context)
-                            .textTheme
-                            .title,
+                        style: Theme.of(context).textTheme.title,
                         key: _searchFieldKey,
                         decoration: new InputDecoration(
                           isDense: true,
@@ -94,52 +102,62 @@ class _ListDemoState extends State<ListDemo> {
                       ),
                     ),
                     _searchStr.isEmpty
-                        ? new Text("") : new GestureDetector(
-                      child: new Padding(child: new Icon(Icons.close,
-                        size: 18.0,
-                        color: Colors.black26,),
-                        padding: new EdgeInsets.all(6.0),
-                      ), onTap: () {
-                      textFieldController.clear();
-                      setState(() {
-                        _searchStr = "";
-                        _items=[];
-                      });
-                    },),
-
+                        ? new Text("")
+                        : new GestureDetector(
+                            child: new Padding(
+                              child: new Icon(
+                                Icons.close,
+                                size: 18.0,
+                                color: Colors.black26,
+                              ),
+                              padding: new EdgeInsets.all(6.0),
+                            ),
+                            onTap: () {
+                              textFieldController.clear();
+                              setState(() {
+                                _searchStr = "";
+                                _items = [];
+                              });
+                            },
+                          ),
                   ],
                 )),
           ),
         ),
-        body: new Column(children: <Widget>[
-          new Expanded(
-              child: _items.length > 0
-                  ? new GridView(
-                gridDelegate: new SliverGridDelegateWithMaxCrossAxisExtent(
-                  maxCrossAxisExtent: 110.0,
-                  mainAxisSpacing: 10.0,
-                  crossAxisSpacing: 10.0,
-                  childAspectRatio: (orientation == Orientation.portrait)
-                      ? 0.5
-                      : 0.45,
-                ),
-                children: _items.map((comicMap) {
-                  return buildComicItem(comicMap);
-                }).toList(),
+        body: _items.length > 0
+            ? new CustomScrollView(
+                slivers: <Widget>[
+                  new SliverPadding(
+                    padding: new EdgeInsets.symmetric(horizontal: 6.0),
+                    sliver: new SliverGrid.count(
+                      crossAxisCount:
+                          (orientation == Orientation.portrait) ? 3 : 5,
+                      mainAxisSpacing: 10.0,
+                      crossAxisSpacing: 10.0,
+                      childAspectRatio:
+                          (orientation == Orientation.portrait) ? 0.5 : 0.45,
+                      children: _items.map((comicMap) {
+                        return buildComicItem(comicMap);
+                      }).toList(),
+                    ),
+                  )
+                ],
               )
-                  : new Align(
-                alignment: Alignment.topCenter, child: new Padding(
-                child: new Text(
-                  "请输入内容以搜索",
-                  textAlign: TextAlign.center,
-                  style: Theme
-                      .of(context)
-                      .textTheme
-                      .caption
-                      .apply(fontSizeFactor: 1.5),
-                ), padding: new EdgeInsets.all(20.0),),)
-          )
-        ]));
+            : new Align(
+                alignment: Alignment.topCenter,
+                child: new Padding(
+                  child: new Text(
+                    "请输入内容以搜索",
+                    textAlign: TextAlign.center,
+                    style: Theme
+                        .of(context)
+                        .textTheme
+                        .caption
+                        .apply(fontSizeFactor: 1.5),
+                  ),
+                  padding: new EdgeInsets.all(20.0),
+                ),
+              ));
   }
 
   buildComicItem(Map comic) {
@@ -170,16 +188,11 @@ class _ListDemoState extends State<ListDemo> {
             overflow: TextOverflow.ellipsis,
             textAlign: TextAlign.center,
             maxLines: 2,
-            style: Theme
-                .of(context)
-                .textTheme
-                .body2,
+            style: Theme.of(context).textTheme.body2,
           )
         ],
       ),
     );
     return item;
   }
-
 }
-

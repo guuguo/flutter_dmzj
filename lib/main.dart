@@ -66,7 +66,7 @@ class _MyHomePageState extends State<MyHomePage> with SingleTickerProviderStateM
                   onPressed: () {
                     Navigator.of(context, rootNavigator: true).push(
                           new CupertinoPageRoute<Null>(
-                            builder: (BuildContext context) => new ListDemo(),
+                            builder: (BuildContext context) => new SearchPage(),
                           ),
                         );
                   }),

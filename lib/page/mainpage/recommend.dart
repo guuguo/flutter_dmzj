@@ -53,49 +53,46 @@ class _RecommendPageState extends State<RecommendPage>
   }
 
   List<Widget> buildList() {
-    List<Widget> list = [];
-    list.add(
-      new SizedBox(
-        height: 190.0,
-        child: new Stack(
-          children: <Widget>[
-            new Positioned.fill(
-              child: new TabBarView(
-                  controller: _tabController,
-                  children: (_items[0]['data'] as List).map((item) {
-                    return new Container(
-                      key: new ObjectKey(item['obj_id']),
-                      child: new Image.network(
-                        item['cover'],
-                        fit: BoxFit.fitWidth,
-                        headers: imageHeader,
-                      ),
-                    );
-                  }).toList()),
-            ),
-            new Positioned(
-              bottom: 0.0,
-              left: 0.0,
-              right: 10.0,
-              child: new Container(
-                color: const Color(0x33000000),
-                child: new Row(children: <Widget>[
-                  new Text(_bannerString),
-                  new TabPageSelector(controller: _tabController),
-                ]),
+    return [
+        new SizedBox(
+          height: 190.0,
+          child: new Stack(
+            children: <Widget>[
+              new Positioned.fill(
+                child: new TabBarView(
+                    controller: _tabController,
+                    children: (_items[0]['data'] as List).map((item) {
+                      return new Container(
+                        key: new ObjectKey(item['obj_id']),
+                        child: new Image.network(
+                          item['cover'],
+                          fit: BoxFit.fitWidth,
+                          headers: imageHeader,
+                        ),
+                      );
+                    }).toList()),
               ),
-            ),
-          ],
-        ),
-      ),
-    );
-    list.addAll(_items.sublist(1).map((e) {
-      return buildRecommendItem(e);
-    }).toList());
-    list.add(
-      buildGrayLine,
-    );
-    return list;
+              new Positioned(
+                bottom: 0.0,
+                left: 0.0,
+                right: 10.0,
+                child: new Container(
+                  color: const Color(0x33000000),
+                  child: new Row(children: <Widget>[
+                    new Text(_bannerString),
+                    new TabPageSelector(controller: _tabController),
+                  ]),
+                ),
+              ),
+            ],
+          ),
+        ),]
+      ..addAll(_items.sublist(1).map((e) {
+        return buildRecommendItem(e);
+      }).toList())
+      ..add(
+        buildGrayLine,
+      );
   }
 
   Container get buildGrayLine {
