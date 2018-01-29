@@ -1,7 +1,7 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_demo/page/mainpage/recommend.dart';
 import 'package:flutter_demo/page/searchPage.dart';
-import 'package:flutter_demo/mainpage/recommend.dart';
 
 void main() => runApp(new MyApp());
 
