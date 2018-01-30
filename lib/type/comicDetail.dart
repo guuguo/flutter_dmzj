@@ -1,7 +1,7 @@
 import 'dart:async';
 import 'dart:io';
 
-import 'package:flutter_demo/plugin/path_provider.dart';
+import 'package:path_provider/path_provider.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:sqflite/src/sql_builder.dart';
 
@@ -80,7 +80,7 @@ class ComicDetail {
 class ComicRead {
   int id;
   int chapterID;
-  int chapterTitle;
+  String chapterTitle;
   int page;
 
   ComicRead(this.id, this.chapterID, this.chapterTitle, this.page);
@@ -93,9 +93,9 @@ class ComicRead {
 }
 
 class ComicProvider {
-  Database db;
+ static Database db;
 
-  Future open() async {
+ static Future open() async {
     Directory documentsDirectory = await getApplicationDocumentsDirectory();
     String path = documentsDirectory.path+ "demo.db";
 
@@ -104,14 +104,14 @@ class ComicProvider {
       await db.execute('''
 create table comicRead (
   id integer primary key,
-  chapterID integer not null
+  chapterID integer not null,
   chapterTitle text not null,
   page integer not null)
 ''');
     });
   }
 
-  Future insert(ComicRead comicRead) async {
+ static Future insert(ComicRead comicRead) async {
     var batch = db.batch();
     batch.insert(
         "comicRead",
@@ -125,19 +125,15 @@ create table comicRead (
     await batch.commit(noResult: true);
   }
 
-  Future getComicRead(int id) async {
+ static Future<ComicRead> getComicRead(int id) async {
     List<Map> maps =
-        await db.query("comicRead", where: "$id = ?", whereArgs: [id]);
+        await db.query("comicRead", where: "id = ?", whereArgs: [id]);
     if (maps.length > 0) {
       return new ComicRead.fromMap(maps.first);
     }
     return null;
   }
 
-//  Future<int> update(Todo todo) async {
-//    return await db.update(tableTodo, todo.toMap(),
-//        where: "$columnId = ?", whereArgs: [todo.id]);
-//  }
 
-  Future close() async => db.close();
+ static Future close() async => db.close();
 }

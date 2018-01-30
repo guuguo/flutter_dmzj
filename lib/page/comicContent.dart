@@ -41,9 +41,7 @@ class _ComicContentPageState extends State<ComicContentPage>
         _comicContent = data;
       });
     });
-    new Timer(new Duration(milliseconds: 50), () {
-      _listController.jumpTo(widget.comicRead.page.toDouble());
-    });
+    ComicProvider.insert(widget.comicRead);
   }
 
   @override

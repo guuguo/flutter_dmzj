@@ -21,8 +21,8 @@ class ComicDetailPage extends StatefulWidget {
 
   static intentTo(BuildContext context, Map comic) {
     Navigator.of(context).push(new CupertinoPageRoute<Null>(
-          builder: (BuildContext context) => new ComicDetailPage(comic: comic),
-        ));
+      builder: (BuildContext context) => new ComicDetailPage(comic: comic),
+    ));
   }
 }
 
@@ -37,25 +37,26 @@ class _ComicDetaiPageState extends State<ComicDetailPage>
   Offset _normalizedOffset;
   double _previousScale;
 
-  Map _detailData;
+  Map _detailData = {};
   ComicRead _comicRead;
-  ComicProvider comicProvider = new ComicProvider();
+
+  bool _isLoad = true;
 
   @override
   void initState() {
     super.initState();
-    comicProvider.open();
-    _detailData = widget.comic;
     Api.getComicDetail(widget.comic["id"], (s) {
       Scaffold.of(context).showSnackBar(new SnackBar(content: new Text(s)));
     }).then((list) {
-      new Timer(new Duration(milliseconds: 50), () {
-        var id = list['id'];
+      var id = list['id'];
+      ComicProvider  .getComicRead(id).then((res) {
         setState(() {
-          _comicRead = comicProvider.getComicRead(id) ??
-              new ComicRead(
-                  id, 0, (list['chapters'][0]['data'] as List).length, 0);
+          var bean = (list['chapters'][0]['data'] as List).last;
+          _comicRead = res ??
+              new ComicRead(id, bean['chapter_id'], bean['chapter_title'], 0);
+
           _detailData = list;
+          _isLoad = false;
         });
       });
     });
@@ -104,7 +105,7 @@ class _ComicDetaiPageState extends State<ComicDetailPage>
     final Offset direction = details.velocity.pixelsPerSecond / magnitude;
     final double distance = (Offset.zero & context.size).shortestSide;
     _flingAnimation = new Tween<Offset>(
-            begin: _offset, end: _clampOffset(_offset + direction * distance))
+        begin: _offset, end: _clampOffset(_offset + direction * distance))
         .animate(_controller);
     _controller
       ..value = 0.0
@@ -144,21 +145,13 @@ class _ComicDetaiPageState extends State<ComicDetailPage>
                   child: new MaterialButton(
                     color: Colors.red,
                     onPressed: () {
-                      if (_detailData.containsKey('last_updatetime')) {
+                      if (!_isLoad) {
                         ComicContentPage.intentTo(context, _comicRead);
-//                        Navigator.of(context).push(new CupertinoPageRoute<Null>(
-//                              builder: (BuildContext context) =>
-//                                  new ComicContentPage(
-//                                    comicID: _detailData['id'],
-//                                    chapterID: (_detailData['chapters'][0]
-//                                            ['data'] as List)
-//                                        .last['chapter_id'],
-//                                  ),
-//                            ));
                       } else {}
                     },
                     child: new Text(
-                      "阅读",
+                      "阅读(${_comicRead == null ? '' : _comicRead
+                          .chapterTitle})",
                       style: Theme.of(context).primaryTextTheme.button,
                     ),
                   ),
@@ -237,7 +230,7 @@ class _ComicDetaiPageState extends State<ComicDetailPage>
                               padding: new EdgeInsets.symmetric(vertical: 20.0),
                             ),
                             new Text(
-                              widget.comic["title"],
+                              _detailData["title"] ?? '',
                               maxLines: 2,
                               softWrap: true,
                               style: Theme.of(context).textTheme.title,
@@ -246,14 +239,22 @@ class _ComicDetaiPageState extends State<ComicDetailPage>
                               padding: new EdgeInsets.symmetric(vertical: 3.0),
                             ),
                             new Text(
-                              widget.comic['authors'] ?? "",
+                              _isLoad
+                                  ? widget.comic['authors']
+                                  : (_detailData['authors'] as List)
+                                  .map((it) {
+                                return it['tag_name'];
+                              })
+                                  .join('/')
+                                  .toString() ??
+                                  "",
                               style: new TextStyle(
                                   color: Colors.red, fontSize: 16.0),
                             ),
                             new Padding(
                               padding: new EdgeInsets.symmetric(vertical: 3.0),
                             ),
-                            new Text("战斗力: ${_detailData['hot_num'] ?? ''}"),
+                            new Text("战斗力: ${_detailData['hot_num'] ?? '' }"),
                           ],
                         ),
                       ),
@@ -282,7 +283,7 @@ class _ComicDetaiPageState extends State<ComicDetailPage>
   }
 
   buildChaptersOrProgress(BuildContext context) {
-    if (_detailData.containsKey("chapters")) {
+    if (!_isLoad) {
       return buildChapters();
     } else {
       return [
@@ -329,7 +330,7 @@ _buildAllChapterItems(ComicRead comicRead, Map detailData,
     var displayNum = i == 0 ? 8 : 4;
     var chapterList = (chapter['data'] as List);
     displayNum =
-        displayNum > chapterList.length ? chapterList.length : displayNum;
+    displayNum > chapterList.length ? chapterList.length : displayNum;
     widgetList.add(buildChapterTitle(chapter, context));
     widgetList.addAll(_buildChapterItems(
         comicRead, detailData, chapterList, displayNum, concise, context));
@@ -349,13 +350,14 @@ List<Widget> _buildChapterItems(ComicRead comicRead, Map detailData,
     _chapterList.add({"chapter_title": "····", "chapter_id": 0});
   }
   List<Widget> list = _chapterList.map((data) {
+    var isRead = data['chapter_id'] == comicRead.chapterID;
     return new GestureDetector(
       onTap: () {
         if (data['chapter_id'] == 0) {
           Navigator.of(context).push(new CupertinoPageRoute<Null>(
-                builder: (BuildContext context) =>
-                    new ChaptersPage(comicRead, detailData),
-              ));
+            builder: (BuildContext context) =>
+            new ChaptersPage(comicRead, detailData),
+          ));
         } else {
           comicRead.chapterID = data['chapter_id'];
           comicRead.chapterTitle = data['chapter_title'];
@@ -365,14 +367,14 @@ List<Widget> _buildChapterItems(ComicRead comicRead, Map detailData,
       child: new Container(
         height: 40.0,
         decoration: new BoxDecoration(
-          border: new Border.all(color: Colors.red),
-        ),
+            border: new Border.all(color: Colors.red),
+            color: isRead ? Colors.red : Colors.white),
         child: new Center(
           child: new Text(
             data['chapter_title'],
             maxLines: 2,
             textAlign: TextAlign.center,
-            style: new TextStyle(color: Colors.red),
+            style: new TextStyle(color:isRead ? Colors.white: Colors.red),
           ),
         ),
       ),

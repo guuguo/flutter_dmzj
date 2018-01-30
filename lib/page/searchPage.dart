@@ -42,6 +42,7 @@ class _SearchPageState extends State<SearchPage> {
     textFieldController.clear();
   }
 
+
   @override
   Widget build(BuildContext context) {
     final Orientation orientation = MediaQuery.of(context).orientation;
