@@ -6,6 +6,7 @@ import 'package:flutter/rendering.dart';
 import 'package:flutter_demo/api.dart';
 import 'package:flutter_demo/chapterGridDelegate.dart';
 import 'package:flutter_demo/page/comicContent.dart';
+import 'package:flutter_demo/type/comicDetail.dart';
 import 'package:meta/meta.dart';
 
 class ComicDetailPage extends StatefulWidget {
@@ -18,10 +19,10 @@ class ComicDetailPage extends StatefulWidget {
   @override
   _ComicDetaiPageState createState() => new _ComicDetaiPageState();
 
-  static intentTo(BuildContext context,Map comic){
+  static intentTo(BuildContext context, Map comic) {
     Navigator.of(context).push(new CupertinoPageRoute<Null>(
-      builder: (BuildContext context) => new ComicDetailPage(comic: comic),
-    ));
+          builder: (BuildContext context) => new ComicDetailPage(comic: comic),
+        ));
   }
 }
 
@@ -37,16 +38,23 @@ class _ComicDetaiPageState extends State<ComicDetailPage>
   double _previousScale;
 
   Map _detailData;
+  ComicRead _comicRead;
+  ComicProvider comicProvider = new ComicProvider();
 
   @override
   void initState() {
     super.initState();
+    comicProvider.open();
     _detailData = widget.comic;
     Api.getComicDetail(widget.comic["id"], (s) {
       Scaffold.of(context).showSnackBar(new SnackBar(content: new Text(s)));
     }).then((list) {
       new Timer(new Duration(milliseconds: 50), () {
+        var id = list['id'];
         setState(() {
+          _comicRead = comicProvider.getComicRead(id) ??
+              new ComicRead(
+                  id, 0, (list['chapters'][0]['data'] as List).length, 0);
           _detailData = list;
         });
       });
@@ -96,7 +104,7 @@ class _ComicDetaiPageState extends State<ComicDetailPage>
     final Offset direction = details.velocity.pixelsPerSecond / magnitude;
     final double distance = (Offset.zero & context.size).shortestSide;
     _flingAnimation = new Tween<Offset>(
-        begin: _offset, end: _clampOffset(_offset + direction * distance))
+            begin: _offset, end: _clampOffset(_offset + direction * distance))
         .animate(_controller);
     _controller
       ..value = 0.0
@@ -137,22 +145,21 @@ class _ComicDetaiPageState extends State<ComicDetailPage>
                     color: Colors.red,
                     onPressed: () {
                       if (_detailData.containsKey('last_updatetime')) {
-                        Navigator.of(context).push(new CupertinoPageRoute<Null>(
-                          builder: (BuildContext context) =>
-                          new ComicContentPage(
-                            comicID: _detailData['id'],
-                            chapterID: (_detailData['chapters'][0]
-                            ['data'] as List).last['chapter_id'],
-                          ),
-                        ));
+                        ComicContentPage.intentTo(context, _comicRead);
+//                        Navigator.of(context).push(new CupertinoPageRoute<Null>(
+//                              builder: (BuildContext context) =>
+//                                  new ComicContentPage(
+//                                    comicID: _detailData['id'],
+//                                    chapterID: (_detailData['chapters'][0]
+//                                            ['data'] as List)
+//                                        .last['chapter_id'],
+//                                  ),
+//                            ));
                       } else {}
                     },
                     child: new Text(
                       "阅读",
-                      style: Theme
-                          .of(context)
-                          .primaryTextTheme
-                          .button,
+                      style: Theme.of(context).primaryTextTheme.button,
                     ),
                   ),
                 ),
@@ -233,23 +240,20 @@ class _ComicDetaiPageState extends State<ComicDetailPage>
                               widget.comic["title"],
                               maxLines: 2,
                               softWrap: true,
-                              style: Theme
-                                  .of(context)
-                                  .textTheme
-                                  .title,
+                              style: Theme.of(context).textTheme.title,
                             ),
                             new Padding(
                               padding: new EdgeInsets.symmetric(vertical: 3.0),
                             ),
                             new Text(
-                              widget.comic['authors']??"",
+                              widget.comic['authors'] ?? "",
                               style: new TextStyle(
                                   color: Colors.red, fontSize: 16.0),
                             ),
                             new Padding(
                               padding: new EdgeInsets.symmetric(vertical: 3.0),
                             ),
-                            new Text("战斗力: ${_detailData['hot_num']??''}"),
+                            new Text("战斗力: ${_detailData['hot_num'] ?? ''}"),
                           ],
                         ),
                       ),
@@ -260,10 +264,7 @@ class _ComicDetaiPageState extends State<ComicDetailPage>
                   top: 16.0,
                   child: new Text(
                     "${formatDate(_detailData['last_updatetime'])}更新",
-                    style: Theme
-                        .of(context)
-                        .primaryTextTheme
-                        .caption,
+                    style: Theme.of(context).primaryTextTheme.caption,
                   )),
             ],
           ),
@@ -298,14 +299,16 @@ class _ComicDetaiPageState extends State<ComicDetailPage>
 
     widgetList.add(
       new SliverPadding(
-        padding: new EdgeInsets.fromLTRB(10.0,0.0,10.0,10.0),
+        padding: new EdgeInsets.fromLTRB(10.0, 0.0, 10.0, 10.0),
         sliver: new SliverGrid(
             gridDelegate: new ChapterGridDelegate(
-              chapters: chapterDetailList, concise: concise,),
+              chapters: chapterDetailList,
+              concise: concise,
+            ),
             delegate: new SliverChildListDelegate(
               _buildAllChapterItems(
-                  _detailData, chapterDetailList, concise, context),)
-        ),
+                  _comicRead, _detailData, chapterDetailList, concise, context),
+            )),
       ),
     );
     return widgetList;
@@ -318,95 +321,85 @@ class _ComicDetaiPageState extends State<ComicDetailPage>
   }
 }
 
-_buildAllChapterItems(Map detailData, List<Map> chapterDetailList, bool concise,
-    BuildContext context) {
+_buildAllChapterItems(ComicRead comicRead, Map detailData,
+    List<Map> chapterDetailList, bool concise, BuildContext context) {
   List<Widget> widgetList = [];
   var i = 0;
   chapterDetailList.forEach((chapter) {
     var displayNum = i == 0 ? 8 : 4;
     var chapterList = (chapter['data'] as List);
     displayNum =
-    displayNum > chapterList.length ? chapterList.length : displayNum;
+        displayNum > chapterList.length ? chapterList.length : displayNum;
     widgetList.add(buildChapterTitle(chapter, context));
     widgetList.addAll(_buildChapterItems(
-        detailData, chapterList, displayNum, concise, context));
+        comicRead, detailData, chapterList, displayNum, concise, context));
     i++;
   });
   return widgetList;
 }
 
-List<Widget> _buildChapterItems(Map detailData, List chapterList, displayNum,
-    bool concise, BuildContext context) {
+List<Widget> _buildChapterItems(ComicRead comicRead, Map detailData,
+    List chapterList, displayNum, bool concise, BuildContext context) {
   var _chapterList = chapterList;
   if (concise) {
-    _chapterList = _chapterList.sublist(
-        0,
-        chapterList.length <= displayNum
-            ? chapterList.length
-            : displayNum - 1);
+    _chapterList = _chapterList.sublist(0,
+        chapterList.length <= displayNum ? chapterList.length : displayNum - 1);
+  }
+  if (_chapterList.length < displayNum) {
+    _chapterList.add({"chapter_title": "····", "chapter_id": 0});
   }
   List<Widget> list = _chapterList.map((data) {
-    return buildChapterItem(detailData, data, context);
+    return new GestureDetector(
+      onTap: () {
+        if (data['chapter_id'] == 0) {
+          Navigator.of(context).push(new CupertinoPageRoute<Null>(
+                builder: (BuildContext context) =>
+                    new ChaptersPage(comicRead, detailData),
+              ));
+        } else {
+          comicRead.chapterID = data['chapter_id'];
+          comicRead.chapterTitle = data['chapter_title'];
+          ComicContentPage.intentTo(context, comicRead);
+        }
+      },
+      child: new Container(
+        height: 40.0,
+        decoration: new BoxDecoration(
+          border: new Border.all(color: Colors.red),
+        ),
+        child: new Center(
+          child: new Text(
+            data['chapter_title'],
+            maxLines: 2,
+            textAlign: TextAlign.center,
+            style: new TextStyle(color: Colors.red),
+          ),
+        ),
+      ),
+    );
   }).toList();
-  if (list.length < displayNum) {
-    list.add(buildChapterItem(
-        detailData, {"chapter_title": "····", "chapter_id": 0}, context));
-  }
   return list;
 }
 
 buildChapterTitle(Map chapter, BuildContext context) {
-  return new Container(height: 40.0, child: new Center(
-    child: new Text(
-      "····  ${chapter['title']}  ····",
-      style: Theme
-          .of(context)
-          .textTheme
-          .caption,
-    ),
-  ),);
-}
-
-buildChapterItem(Map detailData, Map data, BuildContext context) {
-  return new GestureDetector(
-    onTap: () {
-      if (data['chapter_id'] == 0) {
-        Navigator.of(context).push(new CupertinoPageRoute<Null>(
-          builder: (BuildContext context) => new ChaptersPage(detailData),
-        ));
-      } else {
-        Navigator.of(context).push(new CupertinoPageRoute<Null>(
-          builder: (BuildContext context) =>
-          new ComicContentPage(
-            comicID: detailData['id'],
-            chapterID: data['chapter_id'],
-          ),
-        ));
-      }
-    },
-    child: new Container(
-      height: 40.0,
-      decoration: new BoxDecoration(
-        border: new Border.all(color: Colors.red),
-      ),
-      child: new Center(
-        child: new Text(
-          data['chapter_title'],
-          maxLines: 2,
-          textAlign: TextAlign.center,
-          style: new TextStyle(color: Colors.red),
-        ),
+  return new Container(
+    height: 40.0,
+    child: new Center(
+      child: new Text(
+        "····  ${chapter['title']}  ····",
+        style: Theme.of(context).textTheme.caption,
       ),
     ),
   );
 }
 
-
 class ChaptersPage extends StatelessWidget {
-  ChaptersPage(@required this.detailData) :super();
+  ChaptersPage(@required this.comicRead, @required this.detailData) : super();
   Map detailData;
+  ComicRead comicRead;
 
-  @override Widget build(BuildContext context) {
+  @override
+  Widget build(BuildContext context) {
     var chapterDetailList = (detailData['chapters'] as List<Map>);
     return new Scaffold(
       appBar: new AppBar(
@@ -417,11 +410,12 @@ class ChaptersPage extends StatelessWidget {
         addRepaintBoundaries: false,
         padding: new EdgeInsets.all(10.0),
         children: _buildAllChapterItems(
-            detailData, chapterDetailList, false, context),
+            comicRead, detailData, chapterDetailList, false, context),
         gridDelegate: new ChapterGridDelegate(
-          chapters: chapterDetailList, concise: false,),),
+          chapters: chapterDetailList,
+          concise: false,
+        ),
+      ),
     );
   }
-
 }
-
