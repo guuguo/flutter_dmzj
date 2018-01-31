@@ -8,6 +8,7 @@ import 'dart:io';
 
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'package:flutter_demo/api.dart';
 import 'package:flutter_demo/page/comicDetail.dart';
 import 'package:flutter_demo/type/comicDetail.dart';
@@ -23,29 +24,50 @@ class SearchPage extends StatefulWidget {
 }
 
 class _SearchPageState extends State<SearchPage> {
-  static final TextEditingController textFieldController =
-      new TextEditingController();
+  static final TextEditingController _textFieldController =
+  new TextEditingController();
 
   static final GlobalKey<ScaffoldState> scaffoldKey =
-      new GlobalKey<ScaffoldState>();
+  new GlobalKey<ScaffoldState>();
+  ScrollController _scrollController;
 
   List _items = [];
   var page = 0;
   String _searchStr = "";
+  var _isLoad = false;
+
+  @override
+  initState() {
+    super.initState();
+    _scrollController = new ScrollController();
+    _scrollController.addListener(() {
+      if (_scrollController.position.maxScrollExtent -
+          _scrollController.position.pixels < 10 &&
+          _scrollController.position.userScrollDirection ==
+              ScrollDirection.reverse && !_isLoad) {
+        page++;
+        loadData(_searchStr);
+      }
+    });
+  }
 
   final GlobalKey<FormFieldState<String>> _searchFieldKey =
-      new GlobalKey<FormFieldState<String>>();
+  new GlobalKey<FormFieldState<String>>();
 
   @override
   dispose() {
     super.dispose();
-    textFieldController.clear();
+    _textFieldController.clear();
+    _textFieldController.dispose();
+    _scrollController.dispose();
   }
 
 
   @override
   Widget build(BuildContext context) {
-    final Orientation orientation = MediaQuery.of(context).orientation;
+    final Orientation orientation = MediaQuery
+        .of(context)
+        .orientation;
 
     return new Scaffold(
         key: scaffoldKey,
@@ -75,10 +97,13 @@ class _SearchPageState extends State<SearchPage> {
                         }),
                     new Expanded(
                       child: new TextField(
-                        controller: textFieldController,
+                        controller: _textFieldController,
                         autofocus: true,
                         textAlign: TextAlign.start,
-                        style: Theme.of(context).textTheme.title,
+                        style: Theme
+                            .of(context)
+                            .textTheme
+                            .title,
                         key: _searchFieldKey,
                         decoration: new InputDecoration(
                           isDense: true,
@@ -91,74 +116,89 @@ class _SearchPageState extends State<SearchPage> {
                           setState(() {
                             _searchStr = value;
                           });
-                          Api.searchComic(value, page, (s) {
-                            scaffoldKey.currentState.showSnackBar(
-                                new SnackBar(content: new Text(s)));
-                          }).then((list) {
-                            setState(() {
-                              _items = list;
-                            });
-                          });
+                          loadData(value);
                         },
                       ),
                     ),
                     _searchStr.isEmpty
                         ? new Text("")
                         : new GestureDetector(
-                            child: new Padding(
-                              child: new Icon(
-                                Icons.close,
-                                size: 18.0,
-                                color: Colors.black26,
-                              ),
-                              padding: new EdgeInsets.all(6.0),
-                            ),
-                            onTap: () {
-                              textFieldController.clear();
-                              setState(() {
-                                _searchStr = "";
-                                _items = [];
-                              });
-                            },
-                          ),
+                      child: new Padding(
+                        child: new Icon(
+                          Icons.close,
+                          size: 18.0,
+                          color: Colors.black26,
+                        ),
+                        padding: new EdgeInsets.all(6.0),
+                      ),
+                      onTap: () {
+                        _textFieldController.clear();
+                        setState(() {
+                          _searchStr = "";
+                          _items = [];
+                        });
+                      },
+                    ),
                   ],
                 )),
           ),
         ),
         body: _items.length > 0
             ? new CustomScrollView(
-                slivers: <Widget>[
-                  new SliverPadding(
-                    padding: new EdgeInsets.symmetric(horizontal: 6.0),
-                    sliver: new SliverGrid.count(
-                      crossAxisCount:
-                          (orientation == Orientation.portrait) ? 3 : 5,
-                      mainAxisSpacing: 10.0,
-                      crossAxisSpacing: 10.0,
-                      childAspectRatio:
-                          (orientation == Orientation.portrait) ? 0.5 : 0.45,
-                      children: _items.map((comicMap) {
-                        return buildComicItem(comicMap);
-                      }).toList(),
-                    ),
-                  )
-                ],
-              )
+          controller: _scrollController,
+          slivers: <Widget>[
+            new SliverPadding(
+              padding: new EdgeInsets.symmetric(horizontal: 6.0),
+              sliver: new SliverGrid.count(
+                crossAxisCount:
+                (orientation == Orientation.portrait) ? 3 : 5,
+                mainAxisSpacing: 10.0,
+                crossAxisSpacing: 10.0,
+                childAspectRatio:
+                (orientation == Orientation.portrait) ? 0.5 : 0.45,
+                children: _items.map((comicMap) {
+                  return buildComicItem(comicMap);
+                }).toList(),
+              ),
+            ),
+            new SliverToBoxAdapter(
+              child: new Container(padding: new EdgeInsets.only(bottom: 4.0),
+                child: new Text("加载更多", textAlign: TextAlign.center,),),),
+          ],
+        )
             : new Align(
-                alignment: Alignment.topCenter,
-                child: new Padding(
-                  child: new Text(
-                    "请输入内容以搜索",
-                    textAlign: TextAlign.center,
-                    style: Theme
-                        .of(context)
-                        .textTheme
-                        .caption
-                        .apply(fontSizeFactor: 1.5),
-                  ),
-                  padding: new EdgeInsets.all(20.0),
-                ),
-              ));
+          alignment: Alignment.topCenter,
+          child: new Padding(
+            child: new Text(
+              "请输入内容以搜索",
+              textAlign: TextAlign.center,
+              style: Theme
+                  .of(context)
+                  .textTheme
+                  .caption
+                  .apply(fontSizeFactor: 1.5),
+            ),
+            padding: new EdgeInsets.all(20.0),
+          ),
+        ));
+  }
+
+  void loadData(String value) {
+    Api.searchComic(value, page, (s) {
+      _isLoad = true;
+      scaffoldKey.currentState.showSnackBar(
+          new SnackBar(content: new Text(s)));
+    }).then((list) {
+      setState(() {
+        if (page == 0) {
+          _items = list;
+        }
+        else {
+          _items.addAll(list);
+        }
+        _isLoad = false;
+      });
+    });
   }
 
   buildComicItem(Map comic) {
@@ -189,7 +229,10 @@ class _SearchPageState extends State<SearchPage> {
             overflow: TextOverflow.ellipsis,
             textAlign: TextAlign.center,
             maxLines: 2,
-            style: Theme.of(context).textTheme.body2,
+            style: Theme
+                .of(context)
+                .textTheme
+                .body2,
           )
         ],
       ),

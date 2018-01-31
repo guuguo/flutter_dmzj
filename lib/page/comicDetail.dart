@@ -6,7 +6,8 @@ import 'package:flutter/rendering.dart';
 import 'package:flutter_demo/api.dart';
 import 'package:flutter_demo/chapterGridDelegate.dart';
 import 'package:flutter_demo/page/comicContent.dart';
-import 'package:flutter_demo/type/comicDetail.dart';
+import 'package:flutter_demo/page/utils/db.dart';
+import 'package:flutter_demo/type/ComicRead.dart';
 import 'package:meta/meta.dart';
 
 class ComicDetailPage extends StatefulWidget {
@@ -49,7 +50,7 @@ class _ComicDetaiPageState extends State<ComicDetailPage>
       Scaffold.of(context).showSnackBar(new SnackBar(content: new Text(s)));
     }).then((list) {
       var id = list['id'];
-      ComicProvider  .getComicRead(id).then((res) {
+     ComicRead.getComicRead(id).then((res) {
         setState(() {
           var bean = (list['chapters'][0]['data'] as List).last;
           _comicRead = res ??

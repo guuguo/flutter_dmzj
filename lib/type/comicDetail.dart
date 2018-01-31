@@ -1,9 +1,7 @@
 import 'dart:async';
 import 'dart:io';
 
-import 'package:path_provider/path_provider.dart';
-import 'package:sqflite/sqflite.dart';
-import 'package:sqflite/src/sql_builder.dart';
+
 
 class Comic {
   var cover = "";
@@ -77,63 +75,3 @@ class ComicDetail {
         hit_num = map['hit_num'];
 }
 
-class ComicRead {
-  int id;
-  int chapterID;
-  String chapterTitle;
-  int page;
-
-  ComicRead(this.id, this.chapterID, this.chapterTitle, this.page);
-
-  ComicRead.fromMap(Map<String, dynamic> map)
-      : id = map['id'],
-        chapterID = map['chapterID'],
-        chapterTitle = map['chapterTitle'],
-        page = map['page'];
-}
-
-class ComicProvider {
- static Database db;
-
- static Future open() async {
-    Directory documentsDirectory = await getApplicationDocumentsDirectory();
-    String path = documentsDirectory.path+ "demo.db";
-
-    db = await openDatabase(path, version: 1,
-        onCreate: (Database db, int version) async {
-      await db.execute('''
-create table comicRead (
-  id integer primary key,
-  chapterID integer not null,
-  chapterTitle text not null,
-  page integer not null)
-''');
-    });
-  }
-
- static Future insert(ComicRead comicRead) async {
-    var batch = db.batch();
-    batch.insert(
-        "comicRead",
-        {
-          "id": comicRead.id,
-          "chapterID": comicRead.chapterID,
-          "chapterTitle": comicRead.chapterTitle,
-          "page": comicRead.page
-        },
-        conflictAlgorithm: ConflictAlgorithm.replace);
-    await batch.commit(noResult: true);
-  }
-
- static Future<ComicRead> getComicRead(int id) async {
-    List<Map> maps =
-        await db.query("comicRead", where: "id = ?", whereArgs: [id]);
-    if (maps.length > 0) {
-      return new ComicRead.fromMap(maps.first);
-    }
-    return null;
-  }
-
-
- static Future close() async => db.close();
-}

@@ -2,6 +2,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_demo/page/mainpage/recommend.dart';
 import 'package:flutter_demo/page/searchPage.dart';
+import 'package:flutter_demo/page/utils/db.dart';
 import 'package:flutter_demo/type/comicDetail.dart';
 
 class MainPage extends StatefulWidget {
@@ -26,7 +27,7 @@ class _MainPageState extends State<MainPage> with SingleTickerProviderStateMixin
   @override
   void initState() {
     super.initState();
-    ComicProvider.open();
+    DB.open();
     _tabController = new TabController(length: _allPages.length, vsync: this);
 
   }

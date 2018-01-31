@@ -4,22 +4,25 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_demo/api.dart';
 import 'package:flutter_demo/api.dart';
+import 'package:flutter_demo/type/ComicRead.dart';
 import 'package:flutter_demo/type/comicDetail.dart';
 import 'package:flutter_demo/widgets/PlutoImage.dart';
 import 'package:meta/meta.dart';
 
 class ComicContentPage extends StatefulWidget {
-  const ComicContentPage({Key key, @required this.comicRead})
+   ComicContentPage({Key key, @required this.comicRead})
       : assert(comicRead != null),
-        super(key: key);
+        super(key: key){
+    debugPrint(comicRead.toString());
+  }
 
   final ComicRead comicRead;
 
   static intentTo(BuildContext context, ComicRead comicRead) {
     Navigator.of(context).push(new CupertinoPageRoute<Null>(
-          builder: (BuildContext context) =>
-              new ComicContentPage(comicRead: comicRead),
-        ));
+      builder: (BuildContext context) =>
+      new ComicContentPage(comicRead: comicRead),
+    ));
   }
 
   @override
@@ -29,19 +32,30 @@ class ComicContentPage extends StatefulWidget {
 class _ComicContentPageState extends State<ComicContentPage>
     with SingleTickerProviderStateMixin {
   var _comicContent = null;
-  var _listController = new ScrollController();
+  ScrollController _listController;
 
   @override
   void initState() {
     super.initState();
+    _listController = new ScrollController();
+
     Api.getComicContent(widget.comicRead.id, widget.comicRead.chapterID, (s) {
       Scaffold.of(context).showSnackBar(new SnackBar(content: new Text(s)));
     }).then((data) {
       setState(() {
         _comicContent = data;
       });
+      new Timer(new Duration(milliseconds: 1), (){
+//        _listController.position.jumpTo(200.0);
+      });
+//        ComicRead.insert(widget.comicRead);
     });
-    ComicProvider.insert(widget.comicRead);
+  }
+
+  @override
+  dispose() {
+    super.dispose();
+    _listController.dispose();
   }
 
   @override
@@ -49,17 +63,20 @@ class _ComicContentPageState extends State<ComicContentPage>
     return new Scaffold(
       body: _comicContent != null
           ? new Stack(
-              children: <Widget>[
-                new Positioned.fill(
-                  child: new ListView(
-                    controller: _listController,
-                    children: (_comicContent['page_url'] as List).map((f) {
-                      return getImageView(f);
-                    }).toList(),
-                  ),
-                ),
-              ],
-            )
+        children: <Widget>[
+          new Positioned.fill(
+            child: new ListView.builder(
+              itemBuilder:(context,index){
+                widget.comicRead.page=index;
+                ComicRead.insert(widget.comicRead);
+                debugPrint(index.toString());
+                return  getImageView(_comicContent['page_url'][index]);
+              },
+              controller: _listController,
+            ),
+          ),
+        ],
+      )
           : new Center(child: new CupertinoActivityIndicator()),
     );
   }
@@ -67,7 +84,7 @@ class _ComicContentPageState extends State<ComicContentPage>
   getImageView(String src) {
     return new Container(
       decoration:
-          new BoxDecoration(border: new Border(bottom: new BorderSide())),
+      new BoxDecoration(border: new Border(bottom: new BorderSide())),
       child: new PlutoImage.networkWithPlaceholder(
         src,
         new Image.asset(
