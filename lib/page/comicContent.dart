@@ -10,18 +10,20 @@ import 'package:flutter_demo/widgets/PlutoImage.dart';
 import 'package:meta/meta.dart';
 
 class ComicContentPage extends StatefulWidget {
-   ComicContentPage({Key key, @required this.comicRead})
+  ComicContentPage(
+      {Key key, @required this.comicRead, @required this.comicDetail})
       : assert(comicRead != null),
-        super(key: key){
+        super(key: key) {
     debugPrint(comicRead.toString());
   }
 
   final ComicRead comicRead;
+  final Map comicDetail;
 
-  static intentTo(BuildContext context, ComicRead comicRead) {
+  static intentTo(BuildContext context, ComicRead comicRead, Map comicDetail) {
     Navigator.of(context).push(new CupertinoPageRoute<Null>(
       builder: (BuildContext context) =>
-      new ComicContentPage(comicRead: comicRead),
+      new ComicContentPage(comicRead: comicRead, comicDetail: comicDetail,),
     ));
   }
 
@@ -31,24 +33,33 @@ class ComicContentPage extends StatefulWidget {
 
 class _ComicContentPageState extends State<ComicContentPage>
     with SingleTickerProviderStateMixin {
-  var _comicContent = null;
+  var _comicContent = [];
   ScrollController _listController;
+  static final GlobalKey<ScaffoldState> scaffoldKey =
+  new GlobalKey<ScaffoldState>();
 
   @override
   void initState() {
     super.initState();
     _listController = new ScrollController();
+    loadData();
+  }
 
+  snack(String s) {
+    scaffoldKey.currentState.showSnackBar(new SnackBar(content: new Text(s)));
+  }
+
+  loadData() {
     Api.getComicContent(widget.comicRead.id, widget.comicRead.chapterID, (s) {
-      Scaffold.of(context).showSnackBar(new SnackBar(content: new Text(s)));
+      snack(s);
     }).then((data) {
+
       setState(() {
-        _comicContent = data;
+        _comicContent.addAll(data['page_url']);
       });
-      new Timer(new Duration(milliseconds: 1), (){
-//        _listController.position.jumpTo(200.0);
+      _listController.addListener((){
+        debugPrint(_listController.position.toString());
       });
-//        ComicRead.insert(widget.comicRead);
     });
   }
 
@@ -61,18 +72,46 @@ class _ComicContentPageState extends State<ComicContentPage>
   @override
   Widget build(BuildContext context) {
     return new Scaffold(
-      body: _comicContent != null
+      key: scaffoldKey,
+      body: _comicContent.isNotEmpty
           ? new Stack(
         children: <Widget>[
           new Positioned.fill(
             child: new ListView.builder(
-              itemBuilder:(context,index){
-                widget.comicRead.page=index;
+              controller:_listController,
+              itemCount: _comicContent.length,
+              itemBuilder: (context, index) {
+                widget.comicRead.page = index;
                 ComicRead.insert(widget.comicRead);
-                debugPrint(index.toString());
-                return  getImageView(_comicContent['page_url'][index]);
+//                debugPrint(index.toString());
+                if (index == _comicContent.length - 1) {
+                  var _chapters = widget.comicDetail['chapters'];
+                  for (var j = 0; j < _chapters.length; j++) {
+                    var chapter = _chapters[j];
+                    var isBreak = false;
+                    for (var i = 0; i < chapter['data'].length; i++) {
+                      if (chapter['data'][i]['chapter_id'] ==
+                          widget.comicRead.chapterID) {
+                        if (i - 1 < 0) {
+                          snack("已经是最后一章了");
+                        } else {
+                          widget.comicRead.chapterID =
+                          chapter['data'][i - 1]['chapter_id'];
+                          widget.comicRead.chapterTitle =
+                          chapter['data'][i - 1]['chapter_title'];
+                          widget.comicRead.page = 0;
+                          loadData();
+                        }
+                        isBreak = true;
+                        break;
+                      }
+                    }
+                    if (isBreak)
+                      break;
+                  }
+                }
+                return getImageView(_comicContent[index]);
               },
-              controller: _listController,
             ),
           ),
         ],

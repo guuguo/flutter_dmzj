@@ -1,5 +1,5 @@
 import 'dart:async';
-import 'package:flutter_demo/page/utils/db.dart';
+import 'package:flutter_demo/utils/db.dart';
 import 'package:sqflite/src/sql_builder.dart';
 
 class ComicRead {
