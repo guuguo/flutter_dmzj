@@ -2,8 +2,6 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_demo/page/mainPage.dart';
 import 'package:flutter_demo/page/mainpage/recommend.dart';
-import 'package:flutter_demo/page/searchPage.dart';
-import 'package:flutter_demo/type/comicDetail.dart';
 import 'package:flutter_demo/utils/db.dart';
 
 class IndexPage extends StatefulWidget {

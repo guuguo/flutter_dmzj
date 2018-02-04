@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_demo/api.dart';
 import 'package:flutter_demo/page/comicDetail.dart';
 import 'package:flutter_demo/type/comicDetail.dart';
-import 'package:flutter_demo/type/recommendCategory.dart';
 
 class RecommendPage extends StatefulWidget {
   RecommendPage({Key key}) : super(key: key);
@@ -172,7 +171,8 @@ class _RecommendPageState extends State<RecommendPage>
                   )),
               onTap: () {
                 if (list.length != 2) {
-                  ComicDetailPage.intentTo(context, e);
+                 var comic=new ComicStore.fromMap(e);
+                  ComicDetailPage.intentTo(context, comic);
                 }
               },
             ),

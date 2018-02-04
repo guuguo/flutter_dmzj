@@ -15,11 +15,20 @@ class ComicRead {
         chapterID = map['chapterID'],
         chapterTitle = map['chapterTitle'],
         page = map['page'];
+  static const createSQL = '''
+create table comicRead (
+  id integer primary key,
+  chapterID integer not null,
+  chapterTitle text not null,
+  page integer not null)
+''';
+
 
   @override
-  toString(){
+  toString() {
     return "id:$id,chapterID:$chapterID,chapterTitle:$chapterTitle,page:$page";
   }
+
   static Future insert(ComicRead comicRead) async {
     var batch = DB.db.batch();
     batch.insert(

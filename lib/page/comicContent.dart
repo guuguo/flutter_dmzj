@@ -4,7 +4,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_demo/api.dart';
 import 'package:flutter_demo/api.dart';
-import 'package:flutter_demo/type/ComicRead.dart';
+import 'package:flutter_demo/type/comicRead.dart';
 import 'package:flutter_demo/type/comicDetail.dart';
 import 'package:flutter_demo/widgets/PlutoImage.dart';
 import 'package:meta/meta.dart';
@@ -18,9 +18,9 @@ class ComicContentPage extends StatefulWidget {
   }
 
   final ComicRead comicRead;
-  final Map comicDetail;
+  final ComicDetail comicDetail;
 
-  static intentTo(BuildContext context, ComicRead comicRead, Map comicDetail) {
+  static intentTo(BuildContext context, ComicRead comicRead, ComicDetail comicDetail) {
     Navigator.of(context).push(new CupertinoPageRoute<Null>(
       builder: (BuildContext context) =>
       new ComicContentPage(comicRead: comicRead, comicDetail: comicDetail,),
@@ -85,20 +85,20 @@ class _ComicContentPageState extends State<ComicContentPage>
                 ComicRead.insert(widget.comicRead);
 //                debugPrint(index.toString());
                 if (index == _comicContent.length - 1) {
-                  var _chapters = widget.comicDetail['chapters'];
+                  var _chapters = widget.comicDetail.chapters;
                   for (var j = 0; j < _chapters.length; j++) {
                     var chapter = _chapters[j];
                     var isBreak = false;
-                    for (var i = 0; i < chapter['data'].length; i++) {
-                      if (chapter['data'][i]['chapter_id'] ==
+                    for (var i = 0; i < chapter.data.length; i++) {
+                      if (chapter.data[i].chapter_id ==
                           widget.comicRead.chapterID) {
                         if (i - 1 < 0) {
                           snack("已经是最后一章了");
                         } else {
                           widget.comicRead.chapterID =
-                          chapter['data'][i - 1]['chapter_id'];
+                          chapter.data[i - 1].chapter_id;
                           widget.comicRead.chapterTitle =
-                          chapter['data'][i - 1]['chapter_title'];
+                          chapter.data[i - 1].chapter_title;
                           widget.comicRead.page = 0;
                           loadData();
                         }

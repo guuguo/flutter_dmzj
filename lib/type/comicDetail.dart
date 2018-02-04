@@ -1,77 +1,302 @@
 import 'dart:async';
-import 'dart:io';
+import 'dart:convert';
 
+import 'package:flutter_demo/utils/db.dart';
+import 'package:sqflite/src/sql_builder.dart';
 
-
-class Comic {
-  var cover = "";
-  var sub_title = "";
-  var type = 0;
-  var url = "";
-  var title = "";
-  var status = "";
-  var obj_id = 40552;
-
-  @override
-  String toString() => 'Comic($title)';
-
-  Comic.fromMap(Map<String, dynamic> map)
-      : obj_id = map['obj_id'],
-        status = map['status'],
-        title = map['title'],
-        url = map['url'],
-        cover = map['cover'],
-        sub_title = map['sub_title'],
-        type = map['type'];
-}
 
 class ComicDetail {
-  var id = 0;
-  var status = "";
-  var title = "";
-  var last_name = "";
-  var cover = "";
-  var authors = "";
-  String types;
 
-  int hot_hits;
-
-  var description;
+  Object uid;
+  int copyright;
+  int direction;
+  int hit_num;
+  int hot_num;
+  int id;
+  int is_dmzj;
+  int islong;
   int last_updatetime;
-  int copyright = 0;
+  int subscribe_num;
+  String cover;
+  String description;
   String first_letter;
-  int hot_num = 0;
-  int hit_num = 0;
+  String title;
+  List<TagBean> authors;
+  List<ChapterSectionBean> chapters;
+  List<TagBean> status;
+  List<TagBean> types;
+  CommentResult comment;
+
+  ComicDetail.noThing();
+
+  ComicDetail(Map jsonRes) {
+    uid = jsonRes['uid'];
+    copyright = jsonRes['copyright'];
+    direction = jsonRes['direction'];
+    hit_num = jsonRes['hit_num'];
+    hot_num = jsonRes['hot_num'];
+    id = jsonRes['id'];
+    is_dmzj = jsonRes['is_dmzj'];
+    islong = jsonRes['islong'];
+    last_updatetime = jsonRes['last_updatetime'];
+    subscribe_num = jsonRes['subscribe_num'];
+    cover = jsonRes['cover'];
+    description = jsonRes['description'];
+    first_letter = jsonRes['first_letter'];
+    title = jsonRes['title'];
+    authors = [];
+
+    for (var authorsItem in jsonRes['authors']) {
+      authors.add(new TagBean(authorsItem));
+    }
+
+    chapters = [];
+
+    for (var chaptersItem in jsonRes['chapters']) {
+      chapters.add(new ChapterSectionBean(chaptersItem));
+    }
+
+    status = [];
+
+    for (var statusItem in jsonRes['status']) {
+      status.add(new TagBean(statusItem));
+    }
+
+    types = [];
+
+    for (var typesItem in jsonRes['types']) {
+      types.add(new TagBean(typesItem));
+    }
+
+    comment = new CommentResult(jsonRes['comment']);
+  }
 
   @override
-  String toString() => 'ComicDetail($title)';
-
-  ComicDetail.fromComic(Comic comic)
-      : id = comic.obj_id,
-        status = comic.status,
-        title = comic.title,
-        cover = comic.cover;
-
-  ComicDetail.fromMap(Map<String, dynamic> map)
-      : id = map['id'],
-        status = map['status'],
-        title = map['title'],
-        last_name = map['last_name'],
-        cover = map['cover'],
-        authors = map['authors'],
-        types = map['types'],
-        hot_hits = map['hot_hits'];
-
-  ComicDetail.fromDetailMap(Map<String, dynamic> map)
-      : id = map['id'],
-        status = map['status'],
-        title = map['title'],
-        cover = map['cover'],
-        authors = (map['authors'] as List<String>).join('/'),
-        types = (map['types'] as List<String>).join('/'),
-        description = map['description'],
-        last_updatetime = map['last_updatetime'],
-        hot_num = map['hot_num'],
-        hit_num = map['hit_num'];
+  String toString() {
+    return '{"uid": $uid,"copyright": $copyright,"direction": $direction,"hit_num": $hit_num,"hot_num": $hot_num,"id": $id,"is_dmzj": $is_dmzj,"islong": $islong,"last_updatetime": $last_updatetime,"subscribe_num": $subscribe_num,"cover": ${cover !=
+        null ? '${JSON.encode(cover)}' : 'null'},"description": ${description !=
+        null
+        ? '${JSON.encode(description)}'
+        : 'null'},"first_letter": ${first_letter != null ? '${JSON.encode(
+        first_letter)}' : 'null'},"title": ${title != null
+        ? '${JSON.encode(title)}'
+        : 'null'},"authors": $authors,"chapters": $chapters,"status": $status,"types": $types,"comment": $comment}';
+  }
 }
 
+
+class CommentResult {
+
+  int comment_count;
+  List<CommentBean> latest_comment;
+
+
+  CommentResult(jsonRes) {
+    comment_count = jsonRes['comment_count'];
+    latest_comment = [];
+
+    for (var latest_commentItem in jsonRes['latest_comment']) {
+      latest_comment.add(new CommentBean(latest_commentItem));
+    }
+  }
+
+  @override
+  String toString() {
+    return '{"comment_count": $comment_count,"latest_comment": $latest_comment}';
+  }
+}
+
+
+class CommentBean {
+
+  int comment_id;
+  int createtime;
+  int uid;
+  String avatar;
+  String content;
+  String nickname;
+
+
+  CommentBean(jsonRes) {
+    comment_id = jsonRes['comment_id'];
+    createtime = jsonRes['createtime'];
+    uid = jsonRes['uid'];
+    avatar = jsonRes['avatar'];
+    content = jsonRes['content'];
+    nickname = jsonRes['nickname'];
+  }
+
+  @override
+  String toString() {
+    return '{"comment_id": $comment_id,"createtime": $createtime,"uid": $uid,"avatar": ${avatar !=
+        null ? '${JSON.encode(avatar)}' : 'null'},"content": ${content != null
+        ? '${JSON.encode(content)}'
+        : 'null'},"nickname": ${nickname != null
+        ? '${JSON.encode(nickname)}'
+        : 'null'}}';
+  }
+}
+
+
+class TagBean {
+
+  int tag_id;
+  String tag_name;
+
+
+  TagBean(jsonRes) {
+    tag_id = jsonRes['tag_id'];
+    tag_name = jsonRes['tag_name'];
+  }
+
+  @override
+  String toString() {
+    return '{"tag_id": $tag_id,"tag_name": ${tag_name != null ? '${JSON.encode(
+        tag_name)}' : 'null'}}';
+  }
+}
+
+
+class ChapterSectionBean {
+
+  String title;
+  List<ChapterBean> data;
+
+
+  ChapterSectionBean(jsonRes) {
+    title = jsonRes['title'];
+    data = [];
+
+    for (var dataItem in jsonRes['data']) {
+      data.add(new ChapterBean(dataItem));
+    }
+  }
+
+  @override
+  String toString() {
+    return '{"title": ${title != null
+        ? '${JSON.encode(title)}'
+        : 'null'},"data": $data}';
+  }
+}
+
+
+class ChapterBean {
+
+  int chapter_id;
+  int chapter_order;
+  int filesize;
+  int updatetime;
+  String chapter_title;
+
+
+  ChapterBean(jsonRes) {
+    chapter_id = jsonRes['chapter_id'];
+    chapter_order = jsonRes['chapter_order'];
+    filesize = jsonRes['filesize'];
+    updatetime = jsonRes['updatetime'];
+    chapter_title = jsonRes['chapter_title'];
+  }
+
+  @override
+  String toString() {
+    return '{"chapter_id": $chapter_id,"chapter_order": $chapter_order,"filesize": $filesize,"updatetime": $updatetime,"chapter_title": ${chapter_title !=
+        null ? '${JSON.encode(chapter_title)}' : 'null'}}';
+  }
+}
+
+class ComicStore {
+  int id;
+  String cover;
+  String title;
+  String authors;
+  String types = "";
+  int lastReadTime = 0;
+  int isFavorite = 0;
+
+  static const createSQL = '''
+create table comicStore (
+  id integer primary key,
+  title text not null,
+  authors text not null,
+  cover text not null,
+  isFavorite integer not null,
+  lastReadTime integer not null;
+  types text)
+''';
+
+  ComicStore.fromComicDetail(ComicDetail detail){
+    id = detail.id;
+    cover = detail.cover;
+    title = detail.title;
+    authors = detail.authors
+        .map((it) => it.tag_name)
+        .join('/')
+        .toString();
+    types = detail.types
+        .map((tag) => tag.tag_name)
+        .join(' ');
+  }
+
+  ComicStore.fromMap(Map detail){
+    id = detail['id'];
+    cover = detail['cover'];
+    title = detail['title'];
+    authors = detail['authors'];
+    types = detail['types'] ?? '';
+    lastReadTime = detail['lastReadTime'];
+    isFavorite = detail['isFavorite'];
+  }
+
+  saveInfo() {
+    getComic(id).then((res) {
+      if (res != null) {
+        lastReadTime = res.lastReadTime;
+        isFavorite = res.isFavorite;
+      }
+      insert(this);
+    });
+  }
+
+  changeFavorite() async {
+    var batch = DB.db.batch();
+    isFavorite = isFavorite == 0 ? 1 : 0;
+    batch.update("comicStore", {"isFavorite": isFavorite}, where: "id = ?",
+        whereArgs: [id]);
+    await batch.commit(noResult: true);
+  }
+
+  read() async {
+    var batch = DB.db.batch();
+    lastReadTime = new DateTime.now().millisecond;
+    batch.update("comicStore", {"lastReadTime": lastReadTime}, where: "id = ?",
+        whereArgs: [id]);
+    await batch.commit(noResult: true);
+  }
+
+  static Future insert(ComicStore comic) async {
+    var batch = DB.db.batch();
+    batch.insert(
+        "comicStore",
+        {
+          "id": comic.id,
+          "cover": comic.cover,
+          "title": comic.title,
+          "authors": comic.authors,
+          "types": comic.types,
+          "lastReadTime": comic.lastReadTime,
+          "isFavorite": comic.isFavorite,
+        },
+        conflictAlgorithm: ConflictAlgorithm.replace);
+    await batch.commit(noResult: true);
+  }
+
+  static Future<ComicStore> getComic(int id) async {
+    List<Map> maps =
+    await DB.db.query("comicStore", where: "id = ?", whereArgs: [id]);
+    if (maps.length > 0) {
+      return new ComicStore.fromMap(maps.first);
+    }
+    return null;
+  }
+}

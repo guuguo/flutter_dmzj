@@ -2,9 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import 'dart:async';
-import 'dart:convert';
-import 'dart:io';
 
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -12,7 +9,6 @@ import 'package:flutter/rendering.dart';
 import 'package:flutter_demo/api.dart';
 import 'package:flutter_demo/page/comicDetail.dart';
 import 'package:flutter_demo/type/comicDetail.dart';
-import 'package:meta/meta.dart';
 
 class SearchPage extends StatefulWidget {
   const SearchPage({Key key}) : super(key: key);
@@ -204,7 +200,7 @@ class _SearchPageState extends State<SearchPage> {
   buildComicItem(Map comic) {
     final Widget item = new GestureDetector(
       onTap: () {
-        ComicDetailPage.intentTo(context, comic);
+        ComicDetailPage.intentTo(context, new ComicStore.fromMap(comic));
       },
       child: new Column(
         children: <Widget>[

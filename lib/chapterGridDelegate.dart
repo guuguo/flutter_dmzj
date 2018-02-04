@@ -1,4 +1,5 @@
 import 'package:flutter/rendering.dart';
+import 'package:flutter_demo/type/comicDetail.dart';
 import 'package:meta/meta.dart';
 
 class ChaptersGridLayout extends SliverGridLayout {
@@ -157,7 +158,7 @@ class ChapterGridDelegate extends SliverGridDelegate {
       {this.concise = false, @required this.chapters, this.allColumns = 4,
       }) :super();
   final bool concise;
-  final List<Map> chapters;
+  final List<ChapterSectionBean> chapters;
   int allColumns;
 
   @override
@@ -173,7 +174,7 @@ class ChapterGridDelegate extends SliverGridDelegate {
         columnStride: tileWidth + _kSpacing,
         allColumns: allColumns,
         chapterNums: concise ? chapters.map((c) {
-          var length = (c['data'] as List).length;
+          var length = c.data.length;
           if (mapIndex == 0) {
             mapIndex++;
             return allColumns * 2 >= length ? length : allColumns * 2;
@@ -182,7 +183,7 @@ class ChapterGridDelegate extends SliverGridDelegate {
             return allColumns >= length ? length : allColumns;
           }
         }).toList() : chapters.map((c) {
-          return (c['data'] as List).length;
+          return c.data.length;
         }).toList()
     );
   }
