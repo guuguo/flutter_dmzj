@@ -1,5 +1,6 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_demo/page/IndexPage.dart';
 import 'package:flutter_demo/page/mainPage.dart';
 
 void main() => runApp(new MyApp());
@@ -13,7 +14,7 @@ class MyApp extends StatelessWidget {
         primarySwatch: Colors.red,
       ),
 //      routes: _kRoutes,
-      home: new MainPage(title: '动漫之家'),
+      home: new IndexPage(title: '动漫之家'),
     );
   }
 }

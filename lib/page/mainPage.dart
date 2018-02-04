@@ -27,10 +27,9 @@ class _MainPageState extends State<MainPage> with SingleTickerProviderStateMixin
   @override
   void initState() {
     super.initState();
-    DB.open();
     _tabController = new TabController(length: _allPages.length, vsync: this);
-
   }
+
 
   @override
   Widget build(BuildContext context) {
