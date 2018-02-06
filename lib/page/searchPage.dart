@@ -9,6 +9,7 @@ import 'package:flutter/rendering.dart';
 import 'package:flutter_demo/api.dart';
 import 'package:flutter_demo/page/comicDetail.dart';
 import 'package:flutter_demo/type/comicDetail.dart';
+import 'package:flutter_demo/widgets/ComicItem.dart';
 
 class SearchPage extends StatefulWidget {
   const SearchPage({Key key}) : super(key: key);
@@ -20,10 +21,8 @@ class SearchPage extends StatefulWidget {
 }
 
 class _SearchPageState extends State<SearchPage> {
-  static final TextEditingController _textFieldController =
-  new TextEditingController();
-
-  static final GlobalKey<ScaffoldState> scaffoldKey =
+  TextEditingController _textFieldController;
+  GlobalKey<ScaffoldState> scaffoldKey =
   new GlobalKey<ScaffoldState>();
   ScrollController _scrollController;
 
@@ -35,6 +34,7 @@ class _SearchPageState extends State<SearchPage> {
   @override
   initState() {
     super.initState();
+    _textFieldController =new TextEditingController();
     _scrollController = new ScrollController();
     _scrollController.addListener(() {
       if (_scrollController.position.maxScrollExtent -
@@ -153,7 +153,7 @@ class _SearchPageState extends State<SearchPage> {
                 childAspectRatio:
                 (orientation == Orientation.portrait) ? 0.5 : 0.45,
                 children: _items.map((comicMap) {
-                  return buildComicItem(comicMap);
+                  return new ComicItem(comicMap);
                 }).toList(),
               ),
             ),
@@ -197,42 +197,4 @@ class _SearchPageState extends State<SearchPage> {
     });
   }
 
-  buildComicItem(Map comic) {
-    final Widget item = new GestureDetector(
-      onTap: () {
-        ComicDetailPage.intentTo(context, new ComicStore.fromMap(comic));
-      },
-      child: new Column(
-        children: <Widget>[
-          new Padding(padding: const EdgeInsets.symmetric(vertical: 7.0)),
-          new Card(
-            elevation: 4.0,
-            child: new Hero(
-              key: new Key(comic["id"].toString()),
-              tag: comic["title"],
-              child: new Image.network(
-                comic["cover"],
-                width: 100.0,
-                height: 150.0,
-                fit: BoxFit.cover,
-                headers: imageHeader,
-              ),
-            ),
-          ),
-          new Padding(padding: const EdgeInsets.symmetric(vertical: 7.0)),
-          new Text(
-            comic["title"],
-            overflow: TextOverflow.ellipsis,
-            textAlign: TextAlign.center,
-            maxLines: 2,
-            style: Theme
-                .of(context)
-                .textTheme
-                .body2,
-          )
-        ],
-      ),
-    );
-    return item;
-  }
 }

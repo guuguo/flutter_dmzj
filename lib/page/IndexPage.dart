@@ -1,5 +1,7 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_demo/page/favoritePage.dart';
+import 'package:flutter_demo/page/historyPage.dart';
 import 'package:flutter_demo/page/mainPage.dart';
 import 'package:flutter_demo/page/mainpage/recommend.dart';
 import 'package:flutter_demo/utils/db.dart';
@@ -34,9 +36,9 @@ class _IndexPageState extends State<IndexPage>
       new NavigationView (
           "推荐", new MainPage(), const Icon(Icons.access_alarm), this),
       new NavigationView (
-          "收藏", new EmptyPage(), const Icon(Icons.favorite), this),
+          "收藏", new FavoritePage(), const Icon(Icons.favorite), this),
       new NavigationView (
-          "历史", new EmptyPage(), const Icon(Icons.history), this),
+          "历史", new HistoryPage(), const Icon(Icons.history), this),
     ];
     _allPages.forEach((v) =>v.controller.addListener(_rebuild));
     _allPages[_currentIndex].controller.value = 1.0;
@@ -77,9 +79,9 @@ class _IndexPageState extends State<IndexPage>
       type: BottomNavigationBarType.fixed,
       onTap: (int index) {
         setState(() {
-          _allPages[_currentIndex].controller.reverse();
+//          _allPages[_currentIndex].controller.reverse();
           _currentIndex = index;
-          _allPages[_currentIndex].controller.forward();
+//          _allPages[_currentIndex].controller.forward();
         });
       },
     );
@@ -109,9 +111,7 @@ class _IndexPageState extends State<IndexPage>
 //                    );
 //                  }),
 //            ]),
-        body: new Center(
-            child: _buildTransitionsStack()
-        ),
+        body: _allPages[_currentIndex].page,//_buildTransitionsStack(),
         bottomNavigationBar: botNavBar,
       ),
     );

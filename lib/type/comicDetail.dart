@@ -221,7 +221,7 @@ create table comicStore (
   authors text not null,
   cover text not null,
   isFavorite integer not null,
-  lastReadTime integer not null;
+  lastReadTime integer not null,
   types text)
 ''';
 
@@ -239,13 +239,32 @@ create table comicStore (
   }
 
   ComicStore.fromMap(Map detail){
+    fromMapData(detail);
+  }
+
+  fromMapData(Map detail) {
     id = detail['id'];
     cover = detail['cover'];
     title = detail['title'];
     authors = detail['authors'];
     types = detail['types'] ?? '';
-    lastReadTime = detail['lastReadTime'];
-    isFavorite = detail['isFavorite'];
+    lastReadTime = detail['lastReadTime']??0;
+    isFavorite = detail['isFavorite'] ?? 0;
+  }
+
+  static Future<List<ComicStore>> getFavoriteComics() async{
+    var maps =  await DB.db.query(
+        "comicStore", where: "isFavorite = ?", whereArgs: [1]);
+    return maps.map((map){
+      return new ComicStore.fromMap(map);
+    }).toList();
+  }
+  static Future<List<ComicStore>> getHistoryComics() async{
+    var maps =  await DB.db.query(
+        "comicStore", where: "lastReadTime != ?", whereArgs: [0],orderBy: 'lastReadTime ASC',limit: 50);
+    return maps.map((map){
+      return new ComicStore.fromMap(map);
+    }).toList();
   }
 
   saveInfo() {
@@ -266,9 +285,9 @@ create table comicStore (
     await batch.commit(noResult: true);
   }
 
-  read() async {
+ static read(int id) async {
     var batch = DB.db.batch();
-    lastReadTime = new DateTime.now().millisecond;
+    var lastReadTime = new DateTime.now().millisecond;
     batch.update("comicStore", {"lastReadTime": lastReadTime}, where: "id = ?",
         whereArgs: [id]);
     await batch.commit(noResult: true);
@@ -299,4 +318,19 @@ create table comicStore (
     }
     return null;
   }
+
+  Future<ComicStore> getMyComicInfo() async {
+    var maps = await DB.db.query(
+        "comicStore", where: "id = ?", whereArgs: [id]);
+    if (maps.length > 0) {
+      fromMapData(maps.first);
+    }
+    return this;
+  }
+
+  @override
+  String toString() {
+    return 'ComicStore{id: $id, cover: $cover, title: $title, authors: $authors, types: $types, lastReadTime: $lastReadTime, isFavorite: $isFavorite}';
+  }
+
 }

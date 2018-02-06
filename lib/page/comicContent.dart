@@ -14,7 +14,7 @@ class ComicContentPage extends StatefulWidget {
       {Key key, @required this.comicRead, @required this.comicDetail})
       : assert(comicRead != null),
         super(key: key) {
-    debugPrint(comicRead.toString());
+    ComicStore.read(comicDetail.id);
   }
 
   final ComicRead comicRead;

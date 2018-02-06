@@ -1,8 +1,11 @@
+import 'dart:convert';
+
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_demo/api.dart';
 import 'package:flutter_demo/page/comicDetail.dart';
 import 'package:flutter_demo/type/comicDetail.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class RecommendPage extends StatefulWidget {
   RecommendPage({Key key}) : super(key: key);
@@ -20,21 +23,33 @@ class _RecommendPageState extends State<RecommendPage>
 
   @override
   void dispose() {
-    _tabController.dispose();
+    if (_tabController != null)
+      _tabController.dispose();
     super.dispose();
   }
 
   @override
   void initState() {
     super.initState();
-    Api.getRecommend((s) {
-      Scaffold.of(context).showSnackBar(new SnackBar(content: new Text(s)));
-    }).then((list) {
-      setState(() {
-        _items = list;
-        _tabController =
+    debugPrint("initState");
+    SharedPreferences.getInstance().then((prefs) {
+      var json = prefs.getString("RECOMMEND_JSON");
+      if (json != null)
+        setState(() {
+          _items = JSON.decode(json);
+        });
+      else {
+        Api.getRecommend((s) {
+          Scaffold.of(context).showSnackBar(new SnackBar(content: new Text(s)));
+        }).then((json) {
+          setState(() {
+            prefs.setString("RECOMMEND_JSON", json);
+            _items = JSON.decode(json);
+            _tabController =
             new TabController(length: _items[0]['data'].length, vsync: this);
-      });
+          });
+        });
+      }
     });
   }
 
@@ -43,49 +58,50 @@ class _RecommendPageState extends State<RecommendPage>
     return new Scaffold(
       body: _items.length > 0
           ? new ListView(
-              children: buildList(),
-            )
+        children: buildList(),
+      )
           : new Center(
-              child: new CupertinoActivityIndicator(),
-            ),
+        child: new CupertinoActivityIndicator(),
+      ),
     );
   }
 
   List<Widget> buildList() {
     return [
-        new SizedBox(
-          height: 190.0,
-          child: new Stack(
-            children: <Widget>[
-              new Positioned.fill(
-                child: new TabBarView(
-                    controller: _tabController,
-                    children: (_items[0]['data'] as List).map((item) {
-                      return new Container(
-                        key: new ObjectKey(item['obj_id']),
-                        child: new Image.network(
-                          item['cover'],
-                          fit: BoxFit.fitWidth,
-                          headers: imageHeader,
-                        ),
-                      );
-                    }).toList()),
+      new SizedBox(
+        height: 190.0,
+        child: new Stack(
+          children: <Widget>[
+            new Positioned.fill(
+              child: new TabBarView(
+                  controller: _tabController,
+                  children: (_items[0]['data'] as List).map((item) {
+                    return new Container(
+                      key: new ObjectKey(item['obj_id']),
+                      child: new Image.network(
+                        item['cover'],
+                        fit: BoxFit.fitWidth,
+                        headers: imageHeader,
+                      ),
+                    );
+                  }).toList()),
+            ),
+            new Positioned(
+              bottom: 0.0,
+              left: 0.0,
+              right: 10.0,
+              child: new Container(
+                color: const Color(0x33000000),
+                child: new Row(children: <Widget>[
+                  new Text(_bannerString),
+                  new TabPageSelector(controller: _tabController),
+                ]),
               ),
-              new Positioned(
-                bottom: 0.0,
-                left: 0.0,
-                right: 10.0,
-                child: new Container(
-                  color: const Color(0x33000000),
-                  child: new Row(children: <Widget>[
-                    new Text(_bannerString),
-                    new TabPageSelector(controller: _tabController),
-                  ]),
-                ),
-              ),
-            ],
-          ),
-        ),]
+            ),
+          ],
+        ),
+      ),
+    ]
       ..addAll(_items.sublist(1).map((e) {
         return buildRecommendItem(e);
       }).toList())
@@ -116,9 +132,12 @@ class _RecommendPageState extends State<RecommendPage>
           ),
           new Expanded(
               child: new Text(
-            bean['title'],
-            style: Theme.of(context).textTheme.title,
-          )),
+                bean['title'],
+                style: Theme
+                    .of(context)
+                    .textTheme
+                    .title,
+              )),
           new Icon(Icons.chevron_right)
         ],
       )
@@ -129,14 +148,14 @@ class _RecommendPageState extends State<RecommendPage>
         list.add(new Row(
             mainAxisSize: MainAxisSize.min,
             children:
-                _getItems(dataS.sublist(i * 3, i * 3 + 3), bean['sort'])));
+            _getItems(dataS.sublist(i * 3, i * 3 + 3), bean['sort'])));
       }
     } else if (dataS.length % 2 == 0) {
       for (var i = 0; i <= (dataS.length - 1) ~/ 2; i++) {
         list.add(new Row(
             mainAxisSize: MainAxisSize.min,
             children:
-                _getItems(dataS.sublist(i * 2, i * 2 + 2), bean['sort'])));
+            _getItems(dataS.sublist(i * 2, i * 2 + 2), bean['sort'])));
       }
     }
     return new Column(children: list);
@@ -171,7 +190,7 @@ class _RecommendPageState extends State<RecommendPage>
                   )),
               onTap: () {
                 if (list.length != 2) {
-                 var comic=new ComicStore.fromMap(e);
+                  var comic = new ComicStore.fromMap(e);
                   ComicDetailPage.intentTo(context, comic);
                 }
               },
@@ -187,7 +206,10 @@ class _RecommendPageState extends State<RecommendPage>
         columnList.add(new Align(
           child: new Text(
             e.containsKey('authors') ? e['authors'] : e['sub_title'],
-            style: Theme.of(context).textTheme.caption,
+            style: Theme
+                .of(context)
+                .textTheme
+                .caption,
             maxLines: 1,
           ),
         ));

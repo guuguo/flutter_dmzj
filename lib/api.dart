@@ -35,7 +35,7 @@ class Api {
     return [];
   }
 
-  static Future<List> getRecommend(ErrorCallBack callback) async {
+  static Future<String> getRecommend(ErrorCallBack callback) async {
     var url =
         'http://v2.api.dmzj.com/v3/recommend.json?channel=$_channel&version=$_version';
     var httpClient = new HttpClient();
@@ -44,8 +44,8 @@ class Api {
       var response = await request.close();
       if (response.statusCode == HttpStatus.OK) {
         var json = await response.transform(UTF8.decoder).join();
-        List data = JSON.decode(json);
-        return data;
+//        List data = JSON.decode(json);
+        return json;
       } else {
         callback('获取失败:\nHttp status ${response.statusCode}');
       }
@@ -53,7 +53,7 @@ class Api {
       callback('获取失败');
     }
 
-    return [];
+    return "";
   }
 
   static Future<Map> getComicDetail(int comicID, ErrorCallBack callback) async {

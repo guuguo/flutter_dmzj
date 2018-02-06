@@ -5,22 +5,22 @@ import 'package:flutter_demo/page/comicDetail.dart';
 import 'package:flutter_demo/type/comicDetail.dart';
 import 'package:flutter_demo/widgets/ComicItem.dart';
 
-class FavoritePage extends StatefulWidget {
-  FavoritePage({Key key}) : super(key: key);
+class HistoryPage extends StatefulWidget {
+  HistoryPage({Key key}) : super(key: key);
 
   @override
-  _FavoritePageState createState() => new _FavoritePageState();
+  _HistoryPageState createState() => new _HistoryPageState();
 }
 
-class _FavoritePageState extends State<FavoritePage>
+class _HistoryPageState extends State<HistoryPage>
     with SingleTickerProviderStateMixin {
-  _FavoritePageState() : super();
+  _HistoryPageState() : super();
   List<ComicStore> _items = [];
 
   @override
   void initState() {
     super.initState();
-    ComicStore.getFavoriteComics().then((d){
+    ComicStore.getHistoryComics().then((d){
       setState(() {
         _items=d;
       });
@@ -35,7 +35,7 @@ class _FavoritePageState extends State<FavoritePage>
     return new Scaffold(
         appBar: new AppBar(
           centerTitle: true,
-          title: new Text("收藏"),
+          title: new Text("历史"),
         ),
         body: new CustomScrollView(
           slivers: <Widget>[

@@ -40,18 +40,25 @@ class _ComicDetaiPageState extends State<ComicDetailPage>
 
   ComicDetail _comicDetail = new ComicDetail.noThing();
   ComicRead _comicRead;
+  ComicStore _comicStore;
 
   bool _isLoad = true;
 
   @override
   void initState() {
     super.initState();
+    widget.comic.getMyComicInfo().then((comic) =>
+        setState(() {
+          _comicStore = comic;
+        })
+    );
     Api.getComicDetail(widget.comic.id, (s) {
       Scaffold.of(context).showSnackBar(new SnackBar(content: new Text(s)));
     }).then((list) {
       var data = new ComicDetail(list);
       var bean = data.chapters[0].data.last;
-
+      _comicStore = new ComicStore.fromComicDetail(data);
+      _comicStore.saveInfo();
       ComicRead.getComicRead(data.id).then((res) {
         setState(() {
           _comicRead = res ??
@@ -131,16 +138,36 @@ class _ComicDetaiPageState extends State<ComicDetailPage>
           bottom: 0.0,
           left: 0.0,
           right: 0.0,
-          child: new Container(
+          child: new Container( //功能栏
             decoration: new BoxDecoration(
                 color: Colors.white,
                 border: new Border(
                     top: new BorderSide(width: 0.5, color: Colors.black12))),
             height: 50.0,
             child: new Row(
-              mainAxisAlignment: MainAxisAlignment.end,
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: <Widget>[
-                new Container(
+                new GestureDetector(child: new Row(children: <Widget>[
+                  const Padding(padding: const EdgeInsets.only(left: 20.0)),
+                  new Icon(
+                    _isLoad || _comicStore.isFavorite == 0 ? Icons
+                        .favorite_border : Icons
+                        .favorite,
+                    color: _isLoad || _comicStore.isFavorite == 0 ? Colors
+                        .black87 : Colors
+                        .red, size: 20.0,),
+                  const Padding(padding: const EdgeInsets.only(left: 3.0)),
+                  new Text("收藏", style: new TextStyle(
+                      color: _isLoad || _comicStore.isFavorite == 0
+                          ? Colors.black87
+                          : Colors.red),),
+                ],), onTap: () {
+                  setState(() {
+                    _comicStore.changeFavorite();
+                  });
+                },),
+
+                new Container( //阅读按钮
                   width: 100.0,
                   margin: new EdgeInsets.symmetric(horizontal: 10.0),
                   child: new MaterialButton(
@@ -165,7 +192,7 @@ class _ComicDetaiPageState extends State<ComicDetailPage>
             ),
           ),
         ),
-        new Positioned(
+        new Positioned( //scrollView
           left: 0.0,
           top: 0.0,
           right: 0.0,

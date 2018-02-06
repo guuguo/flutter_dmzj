@@ -139,7 +139,7 @@ class ChaptersGridLayout extends SliverGridLayout {
   }
 
   @override
-  double estimateMaxScrollOffset(int childCount) {
+  double computeMaxScrollOffset(int childCount) {
     if (childCount == null)
       return null;
     if (childCount == 0)
