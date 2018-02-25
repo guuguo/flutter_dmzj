@@ -21,14 +21,11 @@ class ComicContentPage extends StatefulWidget {
   final ComicRead comicRead;
   final ComicDetail comicDetail;
 
-  static intentTo(
-      BuildContext context, ComicRead comicRead, ComicDetail comicDetail) {
+  static intentTo(BuildContext context, ComicRead comicRead, ComicDetail comicDetail) {
     Navigator.of(context).push(new CupertinoPageRoute<Null>(
-          builder: (BuildContext context) => new ComicContentPage(
-                comicRead: comicRead,
-                comicDetail: comicDetail,
-              ),
-        ));
+      builder: (BuildContext context) =>
+      new ComicContentPage(comicRead: comicRead, comicDetail: comicDetail,),
+    ));
   }
 
   @override
@@ -39,8 +36,10 @@ class _ComicContentPageState extends State<ComicContentPage>
     with SingleTickerProviderStateMixin {
   var _comicContent = [];
   ScrollController _listController;
-  static final GlobalKey<ScaffoldState> scaffoldKey =
-      new GlobalKey<ScaffoldState>();
+  final GlobalKey<ScaffoldState> scaffoldKey = new GlobalKey<ScaffoldState>();
+  final GlobalKey<ScrollableState> _listKey = new GlobalKey<ScrollableState>();
+  final GlobalKey<_TopBarState> _topBarKey = new GlobalKey<_TopBarState>();
+  var _isShowFunction = false;
 
   @override
   void initState() {
@@ -48,6 +47,8 @@ class _ComicContentPageState extends State<ComicContentPage>
     _listController = new ScrollController();
     loadData();
     _listController.addListener(() {
+      if (_isShowFunction)
+        _topBarKey.currentState.setPage(widget.comicRead.page);
       if (_listController.position.maxScrollExtent -
                   _listController.position.pixels <
               10 &&
@@ -130,7 +131,16 @@ class _ComicContentPageState extends State<ComicContentPage>
                     },
                   ),
                 ),
-              ],
+              ]  ..addAll(_isShowFunction ? [
+                new _TopBarWidget(key: _topBarKey,page:widget.comicRead.page,
+                  pages: _comicContent.length, title: widget.comicRead.chapterTitle,),
+                new Positioned(
+                  child: new Row(children: <Widget>[new Text("")],),
+                  left: 0.0,
+                  right: 0.0,
+                  bottom: 0.0,
+                  height: 80.0,)
+              ] : []),
             )
           : new Center(child: new CupertinoActivityIndicator()),
     );
@@ -139,7 +149,7 @@ class _ComicContentPageState extends State<ComicContentPage>
   getImageView(String src) {
     return new Container(
       decoration:
-          new BoxDecoration(border: new Border(bottom: new BorderSide())),
+      new BoxDecoration(border: new Border(bottom: new BorderSide())),
       child: new PlutoImage.networkWithPlaceholder(
         src,
         new Image.asset(
@@ -154,4 +164,41 @@ class _ComicContentPageState extends State<ComicContentPage>
       ),
     );
   }
+}
+
+class _TopBarWidget extends StatefulWidget {
+  const _TopBarWidget({Key key, this.page,this.title, this.pages}) :super(key: key);
+
+  final String title;
+  final int pages;
+  final int page;
+
+  @override
+  _TopBarState createState() => new _TopBarState(page);
+
+}
+
+class _TopBarState extends State<_TopBarWidget> {
+
+  int _page = 0;
+  _TopBarState(this._page):super();
+
+  setPage(int page) {
+    setState(() {
+      _page = page;
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return new Positioned(
+      child: new AppBar(title: new Text(
+          widget.title + " ${_page.toString()}/${widget.pages}")),
+      left: 0.0,
+      top: 0.0,
+      right: 0.0,
+      height: 80.0,);
+  }
+
+
 }
