@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'package:flutter_demo/api.dart';
 import 'package:flutter_demo/api.dart';
 import 'package:flutter_demo/type/comicRead.dart';
@@ -20,11 +21,14 @@ class ComicContentPage extends StatefulWidget {
   final ComicRead comicRead;
   final ComicDetail comicDetail;
 
-  static intentTo(BuildContext context, ComicRead comicRead, ComicDetail comicDetail) {
+  static intentTo(
+      BuildContext context, ComicRead comicRead, ComicDetail comicDetail) {
     Navigator.of(context).push(new CupertinoPageRoute<Null>(
-      builder: (BuildContext context) =>
-      new ComicContentPage(comicRead: comicRead, comicDetail: comicDetail,),
-    ));
+          builder: (BuildContext context) => new ComicContentPage(
+                comicRead: comicRead,
+                comicDetail: comicDetail,
+              ),
+        ));
   }
 
   @override
@@ -36,29 +40,60 @@ class _ComicContentPageState extends State<ComicContentPage>
   var _comicContent = [];
   ScrollController _listController;
   static final GlobalKey<ScaffoldState> scaffoldKey =
-  new GlobalKey<ScaffoldState>();
+      new GlobalKey<ScaffoldState>();
 
   @override
   void initState() {
     super.initState();
     _listController = new ScrollController();
     loadData();
+    _listController.addListener(() {
+      if (_listController.position.maxScrollExtent -
+                  _listController.position.pixels <
+              10 &&
+          _listController.position.userScrollDirection ==
+              ScrollDirection.reverse &&
+          !_isLoad) {
+//        loadData(_searchStr);
+        var _chapters = widget.comicDetail.chapters;
+        for (var j = 0; j < _chapters.length; j++) {
+          var chapter = _chapters[j];
+          var isBreak = false;
+          for (var i = 0; i < chapter.data.length; i++) {
+            if (chapter.data[i].chapter_id == widget.comicRead.chapterID) {
+              if (i - 1 < 0) {
+                snack("已经是最后一章了");
+              } else {
+                widget.comicRead.chapterID = chapter.data[i - 1].chapter_id;
+                widget.comicRead.chapterTitle =
+                    chapter.data[i - 1].chapter_title;
+                widget.comicRead.page = 0;
+                loadData();
+              }
+              isBreak = true;
+              break;
+            }
+          }
+          if (isBreak) break;
+        }
+      }
+    });
   }
 
   snack(String s) {
     scaffoldKey.currentState.showSnackBar(new SnackBar(content: new Text(s)));
   }
 
+  var _isLoad = false;
+
   loadData() {
+    _isLoad = true;
     Api.getComicContent(widget.comicRead.id, widget.comicRead.chapterID, (s) {
       snack(s);
     }).then((data) {
-
       setState(() {
+        _isLoad = false;
         _comicContent.addAll(data['page_url']);
-      });
-      _listController.addListener((){
-        debugPrint(_listController.position.toString());
       });
     });
   }
@@ -75,47 +110,28 @@ class _ComicContentPageState extends State<ComicContentPage>
       key: scaffoldKey,
       body: _comicContent.isNotEmpty
           ? new Stack(
-        children: <Widget>[
-          new Positioned.fill(
-            child: new ListView.builder(
-              controller:_listController,
-              itemCount: _comicContent.length,
-              itemBuilder: (context, index) {
-                widget.comicRead.page = index;
-                ComicRead.insert(widget.comicRead);
-//                debugPrint(index.toString());
-                if (index == _comicContent.length - 1) {
-                  var _chapters = widget.comicDetail.chapters;
-                  for (var j = 0; j < _chapters.length; j++) {
-                    var chapter = _chapters[j];
-                    var isBreak = false;
-                    for (var i = 0; i < chapter.data.length; i++) {
-                      if (chapter.data[i].chapter_id ==
-                          widget.comicRead.chapterID) {
-                        if (i - 1 < 0) {
-                          snack("已经是最后一章了");
-                        } else {
-                          widget.comicRead.chapterID =
-                          chapter.data[i - 1].chapter_id;
-                          widget.comicRead.chapterTitle =
-                          chapter.data[i - 1].chapter_title;
-                          widget.comicRead.page = 0;
-                          loadData();
-                        }
-                        isBreak = true;
-                        break;
-                      }
-                    }
-                    if (isBreak)
-                      break;
-                  }
-                }
-                return getImageView(_comicContent[index]);
-              },
-            ),
-          ),
-        ],
-      )
+              children: <Widget>[
+                new Positioned.fill(
+                  child: new ListView.builder(
+                    controller: _listController,
+                    itemCount: _comicContent.length+1,
+                    itemBuilder: (context, index) {
+                      widget.comicRead.page = index;
+                      ComicRead.insert(widget.comicRead);
+                      if (index == _comicContent.length) {
+                        return new Center(
+                            child: new Container(
+                          padding: new EdgeInsets.symmetric(vertical: 4.0),
+                          height: 20.0,
+                          child: new Text("加载更多..."),
+                        ));
+                      } else
+                        return getImageView(_comicContent[index]);
+                    },
+                  ),
+                ),
+              ],
+            )
           : new Center(child: new CupertinoActivityIndicator()),
     );
   }
@@ -123,7 +139,7 @@ class _ComicContentPageState extends State<ComicContentPage>
   getImageView(String src) {
     return new Container(
       decoration:
-      new BoxDecoration(border: new Border(bottom: new BorderSide())),
+          new BoxDecoration(border: new Border(bottom: new BorderSide())),
       child: new PlutoImage.networkWithPlaceholder(
         src,
         new Image.asset(

@@ -54,8 +54,8 @@ class _ComicDetaiPageState extends State<ComicDetailPage>
     );
     Api.getComicDetail(widget.comic.id, (s) {
       Scaffold.of(context).showSnackBar(new SnackBar(content: new Text(s)));
-    }).then((list) {
-      var data = new ComicDetail(list);
+    }).then((map) {
+      var data = new ComicDetail(map);
       var bean = data.chapters[0].data.last;
       _comicStore = new ComicStore.fromComicDetail(data);
       _comicStore.saveInfo();
@@ -229,7 +229,7 @@ class _ComicDetaiPageState extends State<ComicDetailPage>
                       new Card(
                         elevation: 4.0,
                         child: new Hero(
-                          tag: widget.comic.title,
+                          tag: widget.comic.tag,
                           child: new GestureDetector(
                             onScaleStart: _handleOnScaleStart,
                             onScaleUpdate: _handleOnScaleUpdate,

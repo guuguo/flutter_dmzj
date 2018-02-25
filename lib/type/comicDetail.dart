@@ -213,6 +213,7 @@ class ComicStore {
   String types = "";
   int lastReadTime = 0;
   int isFavorite = 0;
+  String tag="";
 
   static const createSQL = '''
 create table comicStore (

@@ -49,7 +49,7 @@ class _FavoritePageState extends State<FavoritePage>
                 childAspectRatio:
                 (orientation == Orientation.portrait) ? 0.5 : 0.45,
                 children: _items.map((comicMap) {
-                  return new ComicMyItem(comicMap);
+                  return new ComicItem.Entry(comicMap);
                 }).toList(),
               ),
             ),

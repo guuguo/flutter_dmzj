@@ -1,10 +1,12 @@
 import 'dart:convert';
+import 'dart:math';
 
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_demo/api.dart';
 import 'package:flutter_demo/page/comicDetail.dart';
 import 'package:flutter_demo/type/comicDetail.dart';
+import 'package:flutter_demo/widgets/ComicItem.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class RecommendPage extends StatefulWidget {
@@ -23,8 +25,7 @@ class _RecommendPageState extends State<RecommendPage>
 
   @override
   void dispose() {
-    if (_tabController != null)
-      _tabController.dispose();
+    if (_tabController != null) _tabController.dispose();
     super.dispose();
   }
 
@@ -45,8 +46,8 @@ class _RecommendPageState extends State<RecommendPage>
           setState(() {
             prefs.setString("RECOMMEND_JSON", json);
             _items = JSON.decode(json);
-            _tabController =
-            new TabController(length: _items[0]['data'].length, vsync: this);
+            _tabController = new TabController(
+                length: _items[0]['data'].length, vsync: this);
           });
         });
       }
@@ -58,11 +59,11 @@ class _RecommendPageState extends State<RecommendPage>
     return new Scaffold(
       body: _items.length > 0
           ? new ListView(
-        children: buildList(),
-      )
+              children: buildList(),
+            )
           : new Center(
-        child: new CupertinoActivityIndicator(),
-      ),
+              child: new CupertinoActivityIndicator(),
+            ),
     );
   }
 
@@ -132,12 +133,9 @@ class _RecommendPageState extends State<RecommendPage>
           ),
           new Expanded(
               child: new Text(
-                bean['title'],
-                style: Theme
-                    .of(context)
-                    .textTheme
-                    .title,
-              )),
+            bean['title'],
+            style: Theme.of(context).textTheme.title,
+          )),
           new Icon(Icons.chevron_right)
         ],
       )
@@ -148,33 +146,37 @@ class _RecommendPageState extends State<RecommendPage>
         list.add(new Row(
             mainAxisSize: MainAxisSize.min,
             children:
-            _getItems(dataS.sublist(i * 3, i * 3 + 3), bean['sort'])));
+                _getItems(dataS.sublist(i * 3, i * 3 + 3), bean['sort'])));
       }
     } else if (dataS.length % 2 == 0) {
       for (var i = 0; i <= (dataS.length - 1) ~/ 2; i++) {
         list.add(new Row(
             mainAxisSize: MainAxisSize.min,
             children:
-            _getItems(dataS.sublist(i * 2, i * 2 + 2), bean['sort'])));
+                _getItems(dataS.sublist(i * 2, i * 2 + 2), bean['sort'])));
       }
     }
     return new Column(children: list);
   }
 
   _getItems(List<Map> list, int sort) {
-    double width = 180.0;
     double height = 110.0;
     switch (list.length) {
       case 3:
-        width = 117.0;
         height = 150.0;
     }
-
+//    new ComicItem(e))
     return list.map((e) {
       if (!e.containsKey('id')) {
         e['id'] = e['obj_id'];
         e['authors'] = e['sub_title'];
       }
+      if (!e.containsKey('tag')) {
+        var rng = new Random();
+        e['tag'] = e['id'].toString() + rng.nextInt(100).toString();
+      }
+      var comic = new ComicStore.fromMap(e);
+      comic.tag = e['tag'];
       List<Widget> columnList = [
         new Container(
           height: height,
@@ -183,14 +185,13 @@ class _RecommendPageState extends State<RecommendPage>
             child: new GestureDetector(
               child: new Hero(
                   key: new Key(e["id"].toString()),
-                  tag: e["title"],
+                  tag: comic.tag,
                   child: new Image.network(
                     e['cover'],
                     headers: imageHeader,
                   )),
               onTap: () {
                 if (list.length != 2) {
-                  var comic = new ComicStore.fromMap(e);
                   ComicDetailPage.intentTo(context, comic);
                 }
               },
@@ -206,10 +207,7 @@ class _RecommendPageState extends State<RecommendPage>
         columnList.add(new Align(
           child: new Text(
             e.containsKey('authors') ? e['authors'] : e['sub_title'],
-            style: Theme
-                .of(context)
-                .textTheme
-                .caption,
+            style: Theme.of(context).textTheme.caption,
             maxLines: 1,
           ),
         ));
