@@ -47,15 +47,15 @@ class _ComicContentPageState extends State<ComicContentPage>
     _listController = new ScrollController();
     loadData();
     _listController.addListener(() {
-      if (_isShowFunction)
-        _topBarKey.currentState.setPage(widget.comicRead.page);
-      if (_listController.position.maxScrollExtent -
-                  _listController.position.pixels <
-              10 &&
-          _listController.position.userScrollDirection ==
-              ScrollDirection.reverse &&
-          !_isLoad) {
-//        loadData(_searchStr);
+      var wid=_listKey.currentWidget;
+      if(wid!=null)
+        print((wid as SliverMultiBoxAdaptorWidget).delegate.estimateMaxScrollOffset(0, 0, 0.0,0.0));
+//      if(_listController.position!=null)
+//        print(_listController.position.toString());
+      if (_isShowFunction) _topBarKey.currentState.setPage(widget.comicRead.page);
+      if (_listController.position.maxScrollExtent -_listController.position.pixels < 10
+          &&_listController.position.userScrollDirection == ScrollDirection.reverse
+          &&!_isLoad) {
         var _chapters = widget.comicDetail.chapters;
         for (var j = 0; j < _chapters.length; j++) {
           var chapter = _chapters[j];
@@ -68,7 +68,7 @@ class _ComicContentPageState extends State<ComicContentPage>
                 widget.comicRead.chapterID = chapter.data[i - 1].chapter_id;
                 widget.comicRead.chapterTitle =
                     chapter.data[i - 1].chapter_title;
-                widget.comicRead.page = 0;
+//                widget.comicRead.page = 0;
                 loadData();
               }
               isBreak = true;
@@ -113,7 +113,8 @@ class _ComicContentPageState extends State<ComicContentPage>
           ? new Stack(
               children: <Widget>[
                 new Positioned.fill(
-                  child: new ListView.builder(
+                  child:new GestureDetector(child: new ListView.builder(
+                    key: _listKey,
                     controller: _listController,
                     itemCount: _comicContent.length+1,
                     itemBuilder: (context, index) {
@@ -122,14 +123,17 @@ class _ComicContentPageState extends State<ComicContentPage>
                       if (index == _comicContent.length) {
                         return new Center(
                             child: new Container(
-                          padding: new EdgeInsets.symmetric(vertical: 4.0),
-                          height: 20.0,
-                          child: new Text("加载更多..."),
-                        ));
+                              padding: new EdgeInsets.symmetric(vertical: 4.0),
+                              height: 20.0,
+                              child: new Text("加载更多..."),
+                            ));
                       } else
                         return getImageView(_comicContent[index]);
                     },
                   ),
+                  onTap: (){
+                    setState((){ _isShowFunction=!_isShowFunction; });
+                  },),
                 ),
               ]  ..addAll(_isShowFunction ? [
                 new _TopBarWidget(key: _topBarKey,page:widget.comicRead.page,
