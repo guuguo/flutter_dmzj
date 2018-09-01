@@ -31,21 +31,21 @@ class _RecommendPageState extends State<RecommendPage>
     super.dispose();
   }
 
-  Future<void> _handleRefresh() {
-    return Api.getRecommend((s) {
   Future<Null> _handleRefresh() {
-  return Api.getRecommend((s) {
+    return Api.getRecommend((s) {
       Scaffold.of(context).showSnackBar(new SnackBar(content: new Text(s)));
-    })..then((json) {
-      setState(() {
-        SharedPreferences.getInstance().then((prefs) {
-          prefs.setString("RECOMMEND_JSON", json);
+    })
+      ..then((json) {
+        setState(() {
+          SharedPreferences.getInstance().then((prefs) {
+            prefs.setString("RECOMMEND_JSON", json);
+          });
+          _items = jsonDecode(json);
+          _tabController =
+              new TabController(length: _items[0]['data'].length, vsync: this);
+          return null;
         });
-        _items = jsonDecode(json);
-        _tabController =  new TabController(length: _items[0]['data'].length, vsync: this);
-        return null;
       });
-    });
   }
 
   @override
