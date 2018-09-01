@@ -7,7 +7,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_demo/api.dart';
 import 'package:flutter_demo/page/comicDetail.dart';
 import 'package:flutter_demo/type/comicDetail.dart';
-import 'package:flutter_demo/widgets/ComicItem.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class RecommendPage extends StatefulWidget {
@@ -20,7 +19,7 @@ class RecommendPage extends StatefulWidget {
 class _RecommendPageState extends State<RecommendPage>
     with SingleTickerProviderStateMixin {
   _RecommendPageState() : super();
-  List<Map> _items = [];
+  List _items = [];
   var _bannerString = "";
   TabController _tabController;
   final GlobalKey<RefreshIndicatorState> _refreshIndicatorKey =
@@ -34,15 +33,17 @@ class _RecommendPageState extends State<RecommendPage>
 
   Future<void> _handleRefresh() {
     return Api.getRecommend((s) {
+  Future<Null> _handleRefresh() {
+  return Api.getRecommend((s) {
       Scaffold.of(context).showSnackBar(new SnackBar(content: new Text(s)));
-    }).then((json) {
+    })..then((json) {
       setState(() {
         SharedPreferences.getInstance().then((prefs) {
           prefs.setString("RECOMMEND_JSON", json);
         });
         _items = jsonDecode(json);
-        _tabController =
-            new TabController(length: _items[0]['data'].length, vsync: this);
+        _tabController =  new TabController(length: _items[0]['data'].length, vsync: this);
+        return null;
       });
     });
   }
@@ -56,6 +57,7 @@ class _RecommendPageState extends State<RecommendPage>
       if (json != null)
         setState(() {
           _items = jsonDecode(json);
+          print(json);
         });
       else {
         _handleRefresh();
@@ -150,7 +152,7 @@ class _RecommendPageState extends State<RecommendPage>
         ],
       )
     ]);
-    var dataS = bean['data'] as List<Map>;
+    var dataS = bean['data'] as List;
     if (dataS.length % 3 == 0) {
       for (var i = 0; i <= (dataS.length - 1) ~/ 3; i++) {
         list.add(new Row(
@@ -169,7 +171,7 @@ class _RecommendPageState extends State<RecommendPage>
     return new Column(children: list);
   }
 
-  _getItems(List<Map> list, int sort) {
+  _getItems(List list, int sort) {
     double height = 110.0;
     switch (list.length) {
       case 3:

@@ -5,6 +5,7 @@ dependencies:
   flutter:
     sdk: flutter
   cupertino_icons: ^0.1.2
+  zoomable_image: 1.1.2
   path_provider: ^0.4.1
   sqflite: any
   shared_preferences: 0.4.2
