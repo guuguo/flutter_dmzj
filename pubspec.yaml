@@ -4,11 +4,10 @@ description: A new Flutter project.
 dependencies:
   flutter:
     sdk: flutter
-  cupertino_icons: ^0.1.0
-  zoomable_image: 1.1.2
-  path_provider: ^0.3.1
+  cupertino_icons: ^0.1.2
+  path_provider: ^0.4.1
   sqflite: any
-  shared_preferences: 0.3.2
+  shared_preferences: 0.4.2
 
 dev_dependencies:
   flutter_test:

@@ -74,12 +74,12 @@ class ComicDetail {
   @override
   String toString() {
     return '{"uid": $uid,"copyright": $copyright,"direction": $direction,"hit_num": $hit_num,"hot_num": $hot_num,"id": $id,"is_dmzj": $is_dmzj,"islong": $islong,"last_updatetime": $last_updatetime,"subscribe_num": $subscribe_num,"cover": ${cover !=
-        null ? '${JSON.encode(cover)}' : 'null'},"description": ${description !=
+        null ? '${jsonEncode(cover)}' : 'null'},"description": ${description !=
         null
-        ? '${JSON.encode(description)}'
-        : 'null'},"first_letter": ${first_letter != null ? '${JSON.encode(
+        ? '${jsonEncode(description)}'
+        : 'null'},"first_letter": ${first_letter != null ? '${jsonEncode(
         first_letter)}' : 'null'},"title": ${title != null
-        ? '${JSON.encode(title)}'
+        ? '${jsonEncode(title)}'
         : 'null'},"authors": $authors,"chapters": $chapters,"status": $status,"types": $types,"comment": $comment}';
   }
 }
@@ -129,10 +129,10 @@ class CommentBean {
   @override
   String toString() {
     return '{"comment_id": $comment_id,"createtime": $createtime,"uid": $uid,"avatar": ${avatar !=
-        null ? '${JSON.encode(avatar)}' : 'null'},"content": ${content != null
-        ? '${JSON.encode(content)}'
+        null ? '${jsonEncode(avatar)}' : 'null'},"content": ${content != null
+        ? '${jsonEncode(content)}'
         : 'null'},"nickname": ${nickname != null
-        ? '${JSON.encode(nickname)}'
+        ? '${jsonEncode(nickname)}'
         : 'null'}}';
   }
 }
@@ -151,7 +151,7 @@ class TagBean {
 
   @override
   String toString() {
-    return '{"tag_id": $tag_id,"tag_name": ${tag_name != null ? '${JSON.encode(
+    return '{"tag_id": $tag_id,"tag_name": ${tag_name != null ? '${jsonEncode(
         tag_name)}' : 'null'}}';
   }
 }
@@ -175,7 +175,7 @@ class ChapterSectionBean {
   @override
   String toString() {
     return '{"title": ${title != null
-        ? '${JSON.encode(title)}'
+        ? '${jsonEncode(title)}'
         : 'null'},"data": $data}';
   }
 }
@@ -201,7 +201,7 @@ class ChapterBean {
   @override
   String toString() {
     return '{"chapter_id": $chapter_id,"chapter_order": $chapter_order,"filesize": $filesize,"updatetime": $updatetime,"chapter_title": ${chapter_title !=
-        null ? '${JSON.encode(chapter_title)}' : 'null'}}';
+        null ? '${jsonEncode(chapter_title)}' : 'null'}}';
   }
 }
 

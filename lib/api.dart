@@ -21,9 +21,9 @@ class Api {
     try {
       var request = await httpClient.getUrl(Uri.parse(url));
       var response = await request.close();
-      if (response.statusCode == HttpStatus.OK) {
-        var json = await response.transform(UTF8.decoder).join();
-        List data = JSON.decode(json);
+      if (response.statusCode == HttpStatus.ok) {
+        var json = await response.transform(utf8.decoder).join();
+        List data = jsonDecode(json);
         return data;
       } else {
         callback('搜索失败:\nHttp status ${response.statusCode}');
@@ -43,8 +43,8 @@ class Api {
       var request = await httpClient.getUrl(Uri.parse(url));
       var response = await request.close();
       if (response.statusCode == HttpStatus.OK) {
-        var json = await response.transform(UTF8.decoder).join();
-//        List data = JSON.decode(json);
+        var json = await response.transform(utf8.decoder).join();
+//        List data = jsonDecode(json);
         return json;
       } else {
         callback('获取失败:\nHttp status ${response.statusCode}');
@@ -63,9 +63,9 @@ class Api {
     try {
       var request = await httpClient.getUrl(Uri.parse(url));
       var response = await request.close();
-      if (response.statusCode == HttpStatus.OK) {
-        var json = await response.transform(UTF8.decoder).join();
-        Map data = JSON.decode(json);
+      if (response.statusCode == HttpStatus.ok) {
+        var json = await response.transform(utf8.decoder).join();
+        Map data = jsonDecode(json);
         return data;
       } else {
         callback('获取失败:\nHttp status ${response.statusCode}');
@@ -86,8 +86,8 @@ class Api {
       var request = await httpClient.getUrl(Uri.parse(url));
       var response = await request.close();
       if (response.statusCode == HttpStatus.OK) {
-        var json = await response.transform(UTF8.decoder).join();
-        Map data = JSON.decode(json);
+        var json = await response.transform(utf8.decoder).join();
+        Map data = jsonDecode(json);
         return data;
       } else {
         callback('获取失败:\nHttp status ${response.statusCode}');

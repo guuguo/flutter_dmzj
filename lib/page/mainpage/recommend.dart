@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 import 'dart:math';
 
@@ -22,26 +23,26 @@ class _RecommendPageState extends State<RecommendPage>
   List<Map> _items = [];
   var _bannerString = "";
   TabController _tabController;
-  final GlobalKey<RefreshIndicatorState> _refreshIndicatorKey = new GlobalKey<
-      RefreshIndicatorState>();
+  final GlobalKey<RefreshIndicatorState> _refreshIndicatorKey =
+      new GlobalKey<RefreshIndicatorState>();
 
   @override
   void dispose() {
-    if (_tabController != null)
-      _tabController.dispose();
+    if (_tabController != null) _tabController.dispose();
     super.dispose();
   }
 
-  _handleRefresh() {
-   return Api.getRecommend((s) {
+  Future<void> _handleRefresh() {
+    return Api.getRecommend((s) {
       Scaffold.of(context).showSnackBar(new SnackBar(content: new Text(s)));
     }).then((json) {
       setState(() {
         SharedPreferences.getInstance().then((prefs) {
           prefs.setString("RECOMMEND_JSON", json);
         });
-        _items = JSON.decode(json);
-        _tabController = new TabController(length: _items[0]['data'].length, vsync: this);
+        _items = jsonDecode(json);
+        _tabController =
+            new TabController(length: _items[0]['data'].length, vsync: this);
       });
     });
   }
@@ -54,7 +55,7 @@ class _RecommendPageState extends State<RecommendPage>
       var json = prefs.getString("RECOMMEND_JSON");
       if (json != null)
         setState(() {
-          _items = JSON.decode(json);
+          _items = jsonDecode(json);
         });
       else {
         _handleRefresh();
@@ -64,15 +65,16 @@ class _RecommendPageState extends State<RecommendPage>
 
   @override
   Widget build(BuildContext context) {
-    return new RefreshIndicator(key: _refreshIndicatorKey
-        , child: _items.length > 0
+    return new RefreshIndicator(
+        key: _refreshIndicatorKey,
+        child: _items.length > 0
             ? new ListView(
-          children: buildList(),
-        )
+                children: buildList(),
+              )
             : new Center(
-          child: new CupertinoActivityIndicator(),
-        ), onRefresh: _handleRefresh)
-    ;
+                child: new CupertinoActivityIndicator(),
+              ),
+        onRefresh: _handleRefresh);
   }
 
   List<Widget> buildList() {
@@ -154,14 +156,14 @@ class _RecommendPageState extends State<RecommendPage>
         list.add(new Row(
             mainAxisSize: MainAxisSize.min,
             children:
-            _getItems(dataS.sublist(i * 3, i * 3 + 3), bean['sort'])));
+                _getItems(dataS.sublist(i * 3, i * 3 + 3), bean['sort'])));
       }
     } else if (dataS.length % 2 == 0) {
       for (var i = 0; i <= (dataS.length - 1) ~/ 2; i++) {
         list.add(new Row(
             mainAxisSize: MainAxisSize.min,
             children:
-            _getItems(dataS.sublist(i * 2, i * 2 + 2), bean['sort'])));
+                _getItems(dataS.sublist(i * 2, i * 2 + 2), bean['sort'])));
       }
     }
     return new Column(children: list);
