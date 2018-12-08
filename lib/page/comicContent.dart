@@ -3,11 +3,11 @@ import 'dart:async';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
-import 'package:flutter_demo/api.dart';
-import 'package:flutter_demo/api.dart';
-import 'package:flutter_demo/type/comicRead.dart';
-import 'package:flutter_demo/type/comicDetail.dart';
-import 'package:flutter_demo/widgets/PlutoImage.dart';
+import 'package:dmzj_demo/api.dart';
+import 'package:dmzj_demo/api.dart';
+import 'package:dmzj_demo/type/comicRead.dart';
+import 'package:dmzj_demo/type/comicDetail.dart';
+import 'package:dmzj_demo/widgets/PlutoImage.dart';
 import 'package:meta/meta.dart';
 
 class ComicContentPage extends StatefulWidget {

@@ -1,7 +1,7 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_demo/page/IndexPage.dart';
-import 'package:flutter_demo/page/mainPage.dart';
+import 'package:dmzj_demo/page/IndexPage.dart';
+import 'package:dmzj_demo/page/mainPage.dart';
 
 void main() => runApp(new MyApp());
 

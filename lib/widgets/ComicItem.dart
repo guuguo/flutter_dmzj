@@ -1,9 +1,9 @@
 import 'dart:math';
 
 import 'package:flutter/material.dart';
-import 'package:flutter_demo/api.dart';
-import 'package:flutter_demo/page/comicDetail.dart';
-import 'package:flutter_demo/type/comicDetail.dart';
+import 'package:dmzj_demo/api.dart';
+import 'package:dmzj_demo/page/comicDetail.dart';
+import 'package:dmzj_demo/type/comicDetail.dart';
 
 class ComicItem extends StatelessWidget {
   ComicItem(Map e, {key: Key}) {

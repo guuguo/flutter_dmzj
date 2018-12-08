@@ -1,10 +1,10 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_demo/page/favoritePage.dart';
-import 'package:flutter_demo/page/historyPage.dart';
-import 'package:flutter_demo/page/mainPage.dart';
-import 'package:flutter_demo/page/mainpage/recommend.dart';
-import 'package:flutter_demo/utils/db.dart';
+import 'package:dmzj_demo/page/favoritePage.dart';
+import 'package:dmzj_demo/page/historyPage.dart';
+import 'package:dmzj_demo/page/mainPage.dart';
+import 'package:dmzj_demo/page/mainpage/recommend.dart';
+import 'package:dmzj_demo/utils/db.dart';
 
 class IndexPage extends StatefulWidget {
   IndexPage({Key key, this.title}) : super(key: key);

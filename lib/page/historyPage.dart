@@ -1,9 +1,9 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_demo/api.dart';
-import 'package:flutter_demo/page/comicDetail.dart';
-import 'package:flutter_demo/type/comicDetail.dart';
-import 'package:flutter_demo/widgets/ComicItem.dart';
+import 'package:dmzj_demo/api.dart';
+import 'package:dmzj_demo/page/comicDetail.dart';
+import 'package:dmzj_demo/type/comicDetail.dart';
+import 'package:dmzj_demo/widgets/ComicItem.dart';
 
 class HistoryPage extends StatefulWidget {
   HistoryPage({Key key}) : super(key: key);

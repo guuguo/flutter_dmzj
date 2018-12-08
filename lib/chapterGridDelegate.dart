@@ -1,5 +1,5 @@
 import 'package:flutter/rendering.dart';
-import 'package:flutter_demo/type/comicDetail.dart';
+import 'package:dmzj_demo/type/comicDetail.dart';
 import 'package:meta/meta.dart';
 
 class ChaptersGridLayout extends SliverGridLayout {

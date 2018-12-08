@@ -4,9 +4,9 @@ import 'dart:math';
 
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_demo/api.dart';
-import 'package:flutter_demo/page/comicDetail.dart';
-import 'package:flutter_demo/type/comicDetail.dart';
+import 'package:dmzj_demo/api.dart';
+import 'package:dmzj_demo/page/comicDetail.dart';
+import 'package:dmzj_demo/type/comicDetail.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class RecommendPage extends StatefulWidget {
@@ -31,7 +31,7 @@ class _RecommendPageState extends State<RecommendPage>
     super.dispose();
   }
 
-  Future<Null> _handleRefresh() {
+  Future<String> _handleRefresh() {
     return Api.getRecommend((s) {
       Scaffold.of(context).showSnackBar(new SnackBar(content: new Text(s)));
     })
