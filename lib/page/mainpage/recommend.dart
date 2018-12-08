@@ -236,21 +236,4 @@ class _RecommendPageState extends State<RecommendPage>
   }
 }
 
-class EmptyPage extends StatefulWidget {
-  EmptyPage({Key key}) : super(key: key);
-  final String title = "推荐";
 
-  @override
-  _EmptyPageState createState() => new _EmptyPageState();
-}
-
-class _EmptyPageState extends State<EmptyPage> {
-  @override
-  Widget build(BuildContext context) {
-    return new Scaffold(
-      body: new Center(
-        child: new Text(widget.title),
-      ),
-    );
-  }
-}
