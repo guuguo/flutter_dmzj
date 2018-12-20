@@ -6,10 +6,10 @@
 
 **应用截图**
 -----------
-![image](http://opqb3chot.bkt.clouddn.com/Screenshot_2018-02-02-11-11-34-330_com.guuguo.flu.jpg?imageView/2/w/280/q/100)
-![image](http://opqb3chot.bkt.clouddn.com/Screenshot_2018-02-06-11-19-40-317_com.guuguo.flu.jpg?imageView/2/w/280/q/100)
-![image](http://opqb3chot.bkt.clouddn.com/Screenshot_2018-05-31-16-00-28-550_com.guuguo.flu.png?imageView/2/w/280/q/100)
-![image](http://opqb3chot.bkt.clouddn.com/Screenshot_2018-05-31-16-00-57-078_com.guuguo.flu.png?imageView/2/w/280/q/100)
-![image](http://opqb3chot.bkt.clouddn.com/Screenshot_2018-05-31-16-00-38-799_com.guuguo.flu.png?imageView/2/w/280/q/100)
-
-
+<div style="{display:'flex'};flex-flow:'wrap'">
+<img width="250"  src="http://ww1.sinaimg.cn/mw690/ac5221a0ly1fydbqq2ul1j20u01hc74x.jpg"/>
+<img width="250"  src="http://ww1.sinaimg.cn/mw690/ac5221a0ly1fydbqrz2ttj20u01hch7f.jpg"/>
+<img width="250"  src="http://ww1.sinaimg.cn/mw690/ac5221a0ly1fydbqrmy2zj20u01hck4u.jpg"/>
+<img width="250"  src="http://ww1.sinaimg.cn/mw690/ac5221a0ly1fydbqqnggzj20u01hctc8.jpg"/>
+<img width="250"  src="http://ww1.sinaimg.cn/mw690/ac5221a0ly1fydbqqxzk3j20u01hctea.jpg"/>
+  </div
